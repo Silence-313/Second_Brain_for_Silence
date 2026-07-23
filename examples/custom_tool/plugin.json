@@ -1,0 +1,12 @@
+{
+  "name": "example-custom-tool",
+  "version": "0.1.0",
+  "description": "Example custom tool plugin — a calculator tool",
+  "author": "Agent Framework Team",
+  "capabilities": [
+    {
+      "type": "tool",
+      "class_path": "my_tool.CalculatorTool"
+    }
+  ]
+}

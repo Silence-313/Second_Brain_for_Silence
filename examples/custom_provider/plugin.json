@@ -1,0 +1,12 @@
+{
+  "name": "example-custom-provider",
+  "version": "0.1.0",
+  "description": "Example custom search provider — Wikipedia search",
+  "author": "Agent Framework Team",
+  "capabilities": [
+    {
+      "type": "search_provider",
+      "class_path": "wikipedia_provider.WikipediaSearchProvider"
+    }
+  ]
+}

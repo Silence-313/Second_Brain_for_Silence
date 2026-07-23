@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain Agent</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a; --text: #e1e4ed; --muted: #7c818f;
+  --accent: #4f8fff; --user-bubble: #1e3a5f; --agent-bubble: #1a2836;
+  --danger: #e0556a; --success: #4caf93; --warn: #e0a855;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; }
+.sidebar { width:240px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:14px; flex-shrink:0; }
+.sidebar h1 { font-size:16px; margin-bottom:2px; }
+.sidebar .subtitle { font-size:11px; color:var(--muted); margin-bottom:16px; }
+.sidebar .status { display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:16px; }
+.sidebar .dot { width:7px; height:7px; border-radius:50%; }
+.sidebar .dot.online { background:var(--success); }
+.sidebar .metrics { font-size:11px; color:var(--muted); margin-bottom:14px; }
+.sidebar .metrics div { margin-bottom:3px; }
+.sidebar .metrics span { color:var(--text); }
+.sidebar button { width:100%; padding:8px; margin-bottom:6px; border:none; border-radius:5px; cursor:pointer; font-size:12px; background:var(--border); color:var(--text); }
+.sidebar button:hover { background:#3a3d4a; }
+.main { flex:1; display:flex; flex-direction:column; min-width:0; }
+.header { padding:10px 16px; border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); display:flex; justify-content:space-between; }
+.chat { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:75%; padding:10px 14px; border-radius:10px; line-height:1.5; font-size:13px; word-break:break-word; }
+.msg.user { align-self:flex-end; background:var(--user-bubble); }
+.msg.agent { align-self:flex-start; background:var(--agent-bubble); border:1px solid var(--border); }
+.msg .role { font-size:10px; color:var(--muted); margin-bottom:3px; }
+.msg .time { font-size:10px; color:var(--muted); margin-top:4px; }
+.msg.agent p { margin:4px 0; }
+.msg.agent code { background:#0f1117; padding:1px 5px; border-radius:3px; font-size:12px; }
+.msg.agent pre { background:#0f1117; padding:8px; border-radius:5px; overflow-x:auto; font-size:12px; margin:4px 0; }
+.msg.agent pre code { padding:0; background:none; }
+.msg.agent ul, .msg.agent ol { padding-left:18px; margin:4px 0; }
+.loading { align-self:flex-start; padding:10px 14px; color:var(--muted); font-size:12px; }
+.input-area { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; }
+.input-area input { flex:1; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:13px; outline:none; }
+.input-area input:focus { border-color:var(--accent); }
+.input-area button { padding:10px 20px; background:var(--accent); color:#fff; border:none; border-radius:7px; font-size:13px; cursor:pointer; }
+.input-area button:hover { background:#5d9aff; }
+.input-area button:disabled { background:var(--border); color:var(--muted); cursor:not-allowed; }
+#chat-view { display:flex; flex-direction:column; flex:1; min-height:0; }
+
+/* right inspector panel */
+.inspector { width:300px; background:var(--surface); border-left:1px solid var(--border); overflow-y:auto; padding:14px; flex-shrink:0; font-size:11px; }
+.inspector h3 { font-size:13px; margin-bottom:10px; color:var(--accent); }
+.inspector .section { margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.inspector .section:last-child { border-bottom:none; }
+.inspector .label { color:var(--muted); }
+.inspector .value { color:var(--text); }
+.inspector .row { display:flex; justify-content:space-between; margin-bottom:3px; }
+.inspector .tag { display:inline-block; background:var(--border); color:var(--text); padding:1px 6px; border-radius:3px; margin:1px 2px; font-size:10px; }
+.inspector .tag.good { background:#1a3a2a; color:var(--success); }
+.inspector pre { background:var(--bg); padding:6px 8px; border-radius:4px; overflow-x:auto; font-size:10px; color:var(--muted); white-space:pre-wrap; word-break:break-all; }
+
+/* tabs */
+.tabs { display:flex; gap:0; }
+.tab { padding:8px 16px; border:none; background:none; color:var(--muted); font-size:12px; cursor:pointer; border-bottom:2px solid transparent; transition:color .2s,border-color .2s; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* graph */
+#graph-wrap { flex:1; display:none; position:relative; min-width:0; }
+#graph-container { position:absolute; top:0; left:0; right:0; bottom:0; background:var(--bg); }
+#concept-detail { position:absolute; top:8px; right:8px; width:240px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:11px; display:none; z-index:10; max-height:60%; overflow-y:auto; }
+#concept-detail h4 { font-size:13px; color:var(--accent); margin-bottom:6px; }
+#concept-detail .row { display:flex; justify-content:space-between; margin-bottom:3px; }
+#concept-detail .label { color:var(--muted); }
+#concept-detail .tags { margin-top:6px; }
+#concept-detail .tags span { display:inline-block; background:var(--border); color:var(--text); padding:1px 6px; border-radius:3px; margin:1px 2px; font-size:10px; }
+#concept-detail .related { margin-top:6px; }
+#concept-detail .related a { color:var(--accent); cursor:pointer; text-decoration:none; display:block; font-size:11px; margin:1px 0; }
+#concept-detail .related a:hover { text-decoration:underline; }
+.empty-graph { display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h1>Second Brain</h1>
+  <p class="subtitle">v0.1.0</p>
+
+  <div class="status">
+    <span class="dot online" id="dot"></span>
+    <span id="status-text">{{ status }}</span>
+  </div>
+
+  <div class="metrics" id="metrics">
+    <div>模型 <span>{{ model }}</span></div>
+    <div>记忆 <span id="mem-count">-</span> 条</div>
+    <div>工具 <span id="tool-count">-</span></div>
+    <div>健康 <span id="health-score">-</span></div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span>llm-wiki 知识库</span>
+        <span id="kb-status" style="font-size:10px;color:var(--muted);">检查中</span>
+      </div>
+      <div id="kb-details" style="margin-top:4px;font-size:10px;color:var(--muted);display:none;">
+        <div>摘要 <span id="kb-summaries">0</span> 篇</div>
+        <div>概念 <span id="kb-concepts">0</span> 页</div>
+      </div>
+    </div>
+  </div>
+
+  <button onclick="resetSession()">重置会话</button>
+  <button onclick="exportChat()">导出对话</button>
+  <button onclick="window.location.reload()">刷新页面</button>
+</div>
+
+<div class="main" id="main-panel">
+  <div class="header">
+    <div class="tabs">
+      <button class="tab active" data-tab="chat" onclick="switchTab('chat')">对话</button>
+      <button class="tab" data-tab="graph" onclick="switchTab('graph')">知识图谱</button>
+    </div>
+    <span id="timer">就绪</span>
+  </div>
+
+  <div id="chat-view">
+    <div class="chat" id="chat"></div>
+    <div class="input-area">
+      <input id="input" type="text" placeholder="输入消息，按 Enter 发送…" autofocus />
+      <button id="send-btn" onclick="send()">发送</button>
+    </div>
+  </div>
+
+  <div id="graph-wrap">
+    <div id="graph-container"></div>
+    <div id="concept-detail"></div>
+  </div>
+</div>
+
+<div class="inspector" id="inspector">
+  <h3>Agent 内部状态</h3>
+  <div id="inspector-content" style="color:var(--muted)">发送消息后将显示 Agent 内部运行状态</div>
+</div>
+
+<script>
+let sessionId = Math.random().toString(36).slice(2, 14);
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+let graphData = null;
+let graphSimulation = null;
+
+// ── Tab switching ──
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  const chatView = document.getElementById('chat-view');
+  const graphWrap = document.getElementById('graph-wrap');
+  const inspector = document.getElementById('inspector');
+  const mainPanel = document.getElementById('main-panel');
+
+  if (name === 'graph') {
+    chatView.style.display = 'none';
+    graphWrap.style.display = 'flex';
+    inspector.style.display = 'none';
+    mainPanel.style.flex = '1';
+    loadGraph();
+  } else {
+    chatView.style.display = '';
+    graphWrap.style.display = 'none';
+    inspector.style.display = '';
+    mainPanel.style.flex = '';
+  }
+}
+
+// ── Knowledge Graph (D3 force) ──
+
+function edgeColor(type) {
+  return type === 'related' ? '#e0a855' : type === 'shared-episode' ? '#4f8fff' : '#7c818f';
+}
+
+function nodeColor(confidence) {
+  if (confidence >= 0.7) return '#e0a855';
+  if (confidence >= 0.4) return '#4f8fff';
+  return '#5a5e6a';
+}
+
+async function loadGraph() {
+  const container = document.getElementById('graph-container');
+  if (!container || container.offsetHeight === 0) {
+    setTimeout(loadGraph, 200);
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/kb/graph');
+    graphData = await r.json();
+    container.innerHTML = '';
+
+    if (!graphData.concept_count) {
+      container.innerHTML = '<div class="empty-graph">知识库暂无概念，开始对话后将自动积累</div>';
+      return;
+    }
+
+    drawD3Graph(container, graphData);
+  } catch(e) {
+    container.innerHTML = '<div class="empty-graph">加载图谱失败: ' + e.message + '</div>';
+    console.error('Graph load error:', e);
+  }
+}
+
+function drawD3Graph(container, data) {
+  const W = container.offsetWidth || container.parentElement.offsetWidth || 800;
+  const H = container.offsetHeight || container.parentElement.offsetHeight || 500;
+
+  if (W < 10 || H < 10) {
+    container.innerHTML = '<div class="empty-graph">容器尺寸异常 (W=' + W + ' H=' + H + ')，请调整窗口大小后重试</div>';
+    return;
+  }
+
+  const svg = d3.select(container).append('svg')
+    .attr('width', W).attr('height', H);
+
+  // Zoom
+  const g = svg.append('g');
+  svg.call(d3.zoom().scaleExtent([0.2, 3]).on('zoom', (event) => g.attr('transform', event.transform)));
+
+  // Edge data: map from/to slugs to node indices
+  const nodeMap = new Map(data.nodes.map((n, i) => [n.id, i]));
+  const links = data.edges
+    .filter(e => nodeMap.has(e.from) && nodeMap.has(e.to))
+    .map(e => ({ source: nodeMap.get(e.from), target: nodeMap.get(e.to), weight: e.weight, type: e.type }));
+
+  const nodes = data.nodes.map(n => ({ ...n, x: W/2 + (Math.random()-0.5)*100, y: H/2 + (Math.random()-0.5)*100 }));
+
+  // Edges
+  const link = g.append('g').selectAll('line').data(links).join('line')
+    .attr('stroke', d => edgeColor(d.type))
+    .attr('stroke-opacity', d => 0.3 + d.weight * 0.7)
+    .attr('stroke-width', d => Math.max(1, d.weight * 3));
+
+  // Nodes
+  const node = g.append('g').selectAll('g').data(nodes).join('g')
+    .style('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }))
+    .on('click', (e, d) => { e.stopPropagation(); showConceptDetail(d.id); });
+
+  node.append('circle')
+    .attr('r', d => 6 + d.degree * 3)
+    .attr('fill', d => nodeColor(d.confidence))
+    .attr('stroke', '#1a1d27')
+    .attr('stroke-width', 2);
+
+  node.append('text')
+    .text(d => d.label)
+    .attr('dy', d => -10 - d.degree * 3)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#e1e4ed')
+    .attr('font-size', 11);
+
+  svg.on('click', () => document.getElementById('concept-detail').style.display = 'none');
+
+  // Force simulation
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).distance(100).strength(d => d.weight * 0.5))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('collision', d3.forceCollide().radius(d => 14 + d.degree * 3))
+    .on('tick', () => {
+      link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+      node.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+  graphSimulation = sim;
+}
+
+function showConceptDetail(slug) {
+  const node = graphData.nodes.find(n => n.id === slug);
+  if (!node) return;
+
+  const related = graphData.edges
+    .filter(e => e.from === slug || e.to === slug)
+    .map(e => e.from === slug ? e.to : e.from);
+
+  const el = document.getElementById('concept-detail');
+  el.innerHTML = `
+    <h4>${esc(node.label)}</h4>
+    <div class="row"><span class="label">关联度</span><span>${node.degree}</span></div>
+    <div class="tags">${node.tags.map(t => `<span>${esc(t)}</span>`).join('')||'<span style="color:var(--muted)">无标签</span>'}</div>
+    <div class="related"><span class="label">关联概念</span>${related.length ? related.map(r => `<a onclick="focusNode('${r}')">${esc(r)}</a>`).join('') : '<span style="color:var(--muted);display:block">无</span>'}</div>
+  `;
+  el.style.display = 'block';
+}
+
+function focusNode(slug) {
+  if (!graphSimulation || !graphData) return;
+  const node = graphSimulation.nodes().find(n => n.id === slug);
+  if (!node) return;
+  // Center the view on this node
+  const container = document.getElementById('graph-container');
+  const svg = d3.select(container).select('svg');
+  const g = svg.select('g');
+  const W = container.offsetWidth, H = container.offsetHeight;
+  g.transition().duration(500)
+    .attr('transform', `translate(${W/2 - node.x},${H/2 - node.y}) scale(1.3)`);
+  showConceptDetail(slug);
+}
+
+const HISTORY_KEY = 'sb-chat-history';
+const MAX_HISTORY = 200;
+let history = [];
+
+function loadHistory() {
+  try {
+    history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  } catch(e) { history = []; }
+  history.forEach(h => {
+    const div = document.createElement('div');
+    div.className = `msg ${h.role}`;
+    const body = h.role === 'agent' ? renderMarkdown(h.text) : escapeHtml(h.text);
+    div.innerHTML = `<div class="role">${h.role === 'user' ? '你' : 'Agent'}</div><div>${body}</div><div class="time">${h.time}</div>`;
+    chat.appendChild(div);
+  });
+  if (history.length) chat.scrollTop = chat.scrollHeight;
+}
+
+function saveHistory() {
+  if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e) {}
+}
+
+function addMsg(role, text, save) {
+  const time = new Date().toLocaleTimeString();
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const body = role === 'agent' ? renderMarkdown(text) : escapeHtml(text);
+  div.innerHTML = `<div class="role">${role === 'user' ? '你' : 'Agent'}</div><div>${body}</div><div class="time">${time}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  if (save !== false) { history.push({ role, text, time }); saveHistory(); }
+}
+
+function renderMarkdown(text) {
+  try {
+    if (typeof marked !== 'undefined') {
+      return marked.parse(text, { breaks: true });
+    }
+  } catch(e) {}
+  return escapeHtml(text);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function showLoading() {
+  const div = document.createElement('div');
+  div.className = 'loading';
+  div.id = 'loader';
+  div.textContent = 'Agent 正在思考…';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function hideLoading() {
+  const el = document.getElementById('loader');
+  if (el) el.remove();
+}
+
+function updateInspector(internal) {
+  const el = document.getElementById('inspector-content');
+  if (!internal) { el.innerHTML = '<span style="color:var(--muted)">无内部状态数据</span>'; return; }
+
+  let html = '';
+
+  // ── Knowledge Hit (merged reasoning + memory + kb prompt) ──
+  const hasConcepts = internal.reasoning && internal.reasoning.key_concepts && internal.reasoning.key_concepts.length > 0;
+  const wikiCount = internal.memory ? internal.memory.wiki_count : 0;
+  const kbPromptUsed = internal.kb && internal.kb.prompt_injected;
+  const hasKB = wikiCount > 0 || hasConcepts || kbPromptUsed;
+
+  html += '<div class="section">';
+  html += '<div style="color:var(--warn);margin-bottom:6px;font-weight:bold;">知识命中</div>';
+
+  if (hasKB) {
+    html += `<div class="row"><span class="label">状态</span><span style="color:var(--success);font-weight:bold;">命中</span></div>`;
+    if (kbPromptUsed) html += `<div class="row"><span class="label">KB 注入</span><span class="value">${internal.kb.concept_count} 个概念</span></div>`;
+    if (wikiCount > 0) html += `<div class="row"><span class="label">Wiki 匹配</span><span class="value">${wikiCount} 条</span></div>`;
+    if (hasConcepts) {
+      html += `<div class="row"><span class="label">概念匹配</span><span class="value">${internal.reasoning.key_concepts.length} 个</span></div>`;
+      html += '<div style="margin-top:4px">';
+      internal.reasoning.key_concepts.forEach(c => {
+        html += `<span class="tag good">${esc(c)}</span>`;
+      });
+      html += '</div>';
+    }
+    if (internal.reasoning && internal.reasoning.confidence) {
+      html += `<div class="row" style="margin-top:4px"><span class="label">推理置信度</span><span class="value">${(internal.reasoning.confidence*100).toFixed(0)}%</span></div>`;
+    }
+  } else {
+    html += '<span style="color:var(--muted)">未命中 — 将基于通用知识回答</span>';
+  }
+  html += '</div>';
+
+  // ── Router ──
+  if (internal.router) {
+    html += '<div class="section"><div style="color:var(--accent);margin-bottom:4px">路由</div>';
+    html += `<div class="row"><span class="label">工具</span><span class="tag good">${esc(internal.router.tool)}</span></div>`;
+    html += `<div class="row"><span class="label">置信度</span><span class="value">${(internal.router.confidence*100).toFixed(0)}%</span></div>`;
+    if (internal.router.reason) html += `<div class="row"><span class="label">原因</span><span class="value">${esc(internal.router.reason)}</span></div>`;
+    html += '</div>';
+  }
+
+  // ── Memory Detail ──
+  if (internal.memory && (internal.memory.has_episodic || internal.memory.has_profile)) {
+    html += '<div class="section"><div style="color:var(--accent);margin-bottom:4px">记忆上下文</div>';
+    html += `<div class="row"><span class="label">情景记忆</span><span class="value" style="color:${internal.memory.has_episodic?'var(--success)':'var(--muted)'}">${internal.memory.has_episodic ? '已加载' : '无'}</span></div>`;
+    html += `<div class="row"><span class="label">用户画像</span><span class="value" style="color:${internal.memory.has_profile?'var(--success)':'var(--muted)'}">${internal.memory.has_profile ? '已加载' : '无'}</span></div>`;
+    html += '</div>';
+  }
+
+  // ── Reasoning Insights ──
+  if (internal.reasoning && internal.reasoning.insights && internal.reasoning.insights.length) {
+    html += '<div class="section"><div style="color:var(--accent);margin-bottom:4px">推理洞察</div>';
+    internal.reasoning.insights.forEach(i => { html += `<pre>${esc(i)}</pre>`; });
+    html += '</div>';
+  }
+
+  // ── Execution ──
+  if (internal.execution && Object.keys(internal.execution).length) {
+    html += '<div class="section"><div style="color:var(--accent);margin-bottom:4px">工具执行</div>';
+    Object.entries(internal.execution).forEach(([sid, r]) => {
+      html += `<div class="row"><span class="label">${esc(sid)}</span><span class="tag ${r.success?'good':''}">${r.success?'成功':'失败'}</span></div>`;
+      if (r.data_preview) html += `<pre>${esc(r.data_preview)}</pre>`;
+    });
+    html += '</div>';
+  }
+
+  // ── Pipeline Timings ──
+  if (internal.stage_timings && Object.keys(internal.stage_timings).length) {
+    html += '<div class="section"><div style="color:var(--accent);margin-bottom:4px">流水线耗时 (ms)</div>';
+    Object.entries(internal.stage_timings).sort((a,b) => b[1]-a[1]).forEach(([s,t]) => {
+      html += `<div class="row"><span class="label">${esc(s)}</span><span class="value">${t.toFixed(1)}</span></div>`;
+    });
+    html += '</div>';
+  }
+
+  // ── Errors ──
+  if (internal.errors && internal.errors.length) {
+    html += '<div class="section"><div style="color:var(--danger);margin-bottom:4px">错误</div>';
+    internal.errors.forEach(e => { html += `<pre style="color:var(--danger)">${esc(e)}</pre>`; });
+    html += '</div>';
+  }
+
+  el.innerHTML = html || '<span style="color:var(--muted)">无内部状态数据</span>';
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function send() {
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  input.disabled = true;
+  document.getElementById('send-btn').disabled = true;
+  addMsg('user', msg);
+  showLoading();
+
+  const ctxHistory = history.slice(-20);
+
+  // Try streaming first, fall back to non-streaming
+  try {
+    const resp = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg, session_id: sessionId, history: ctxHistory}),
+    });
+
+    if (!resp.ok) throw new Error('stream endpoint returned ' + resp.status);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let agentDiv = null;
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+
+          if (data.token) {
+            if (!agentDiv) {
+              hideLoading();
+              agentDiv = createAgentMsg();
+            }
+            fullText += data.token;
+            updateAgentMsg(agentDiv, fullText);
+          } else if (data.done) {
+            if (!agentDiv) {
+              hideLoading();
+              agentDiv = createAgentMsg();
+              updateAgentMsg(agentDiv, fullText || '(empty response)');
+            }
+            if (fullText) {
+              history.push({ role: 'agent', text: fullText, time: new Date().toLocaleTimeString() });
+              saveHistory();
+            }
+            if (data.internal) updateInspector(data.internal);
+            document.getElementById('timer').textContent = `${(data.duration_ms||0).toFixed(0)}ms`;
+          } else if (data.error) {
+            hideLoading();
+            addMsg('agent', 'Error: ' + data.error);
+          }
+        } catch(e) { /* skip malformed lines */ }
+      }
+    }
+  } catch (e) {
+    // Fallback to non-streaming
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: msg, session_id: sessionId, history: ctxHistory}),
+      });
+      const data = await resp.json();
+      hideLoading();
+      if (data.text) addMsg('agent', data.text);
+      if (data.internal) updateInspector(data.internal);
+      document.getElementById('timer').textContent = `${(data.duration_ms||0).toFixed(0)}ms`;
+    } catch (e2) {
+      hideLoading();
+      addMsg('agent', 'Error: ' + e2.message);
+    }
+  } finally {
+    input.disabled = false;
+    document.getElementById('send-btn').disabled = false;
+    input.focus();
+  }
+}
+
+function createAgentMsg() {
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.innerHTML = '<div class="role">Agent</div><div class="msg-body"></div><div class="time">' + new Date().toLocaleTimeString() + '</div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function updateAgentMsg(div, text) {
+  const body = div.querySelector('.msg-body');
+  body.innerHTML = renderMarkdown(text);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function loadHealth() {
+  try {
+    const r = await fetch('/api/health');
+    const d = await r.json();
+    document.getElementById('status-text').textContent = d.status;
+    document.getElementById('dot').className = 'dot ' + (d.status === 'healthy' ? 'online' : 'offline');
+    document.getElementById('mem-count').textContent = d.memory_episodic_count;
+    document.getElementById('tool-count').textContent = d.tool_count;
+    document.getElementById('health-score').textContent = (d.cognitive_health_score*100).toFixed(0) + '%';
+    document.getElementById('kb-status').textContent = d.kb_enabled ? '已启用' : '未启用';
+    document.getElementById('kb-status').style.color = d.kb_enabled ? 'var(--success)' : 'var(--muted)';
+  } catch(e) {}
+}
+
+async function loadKBInfo() {
+  try {
+    const r = await fetch('/api/kb/info');
+    const d = await r.json();
+    if (d.enabled) {
+      document.getElementById('kb-details').style.display = 'block';
+      document.getElementById('kb-summaries').textContent = d.summary_count;
+      document.getElementById('kb-concepts').textContent = d.concept_count;
+    }
+  } catch(e) {}
+}
+
+function exportChat() {
+  if (!history.length) return;
+  let text = '';
+  for (const h of history) {
+    const role = h.role === 'user' ? '你' : 'Agent';
+    text += `[${h.time}] ${role}\n${h.text}\n\n`;
+  }
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `chat-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function resetSession() {
+  try { await fetch('/api/reset', {method:'POST'}); } catch(e) {}
+  sessionId = Math.random().toString(36).slice(2, 14);
+  history = [];
+  try { localStorage.removeItem(HISTORY_KEY); } catch(e) {}
+  chat.innerHTML = '';
+  document.getElementById('inspector-content').innerHTML = '<span style="color:var(--muted)">Agent 已重置。发送新消息查看内部状态。</span>';
+  addMsg('agent', '会话已重置。有什么可以帮助你的？', false);
+}
+
+input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+
+loadHistory();
+loadHealth();
+loadKBInfo();
+setInterval(loadHealth, 15000);
+if (!history.length) {
+  addMsg('agent', '你好！我是你的 Second Brain Agent，基于12阶段流水线：sanitize → route → retrieve → reason → plan → execute → prompt → generate → persist → learn。发送消息即可看到完整的 Agent 内部运行状态。', false);
+}
+</script>
+
+</body>
+</html>
