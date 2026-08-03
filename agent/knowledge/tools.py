@@ -254,7 +254,7 @@ class MaintainKBTool(Tool):
         except Exception as e:
             return ToolResult(success=False, error=f"维护失败: {e}")
 
-    async def _extract_with_llm(self, chat_log: str) -> tuple[list[dict], list[dict], str]:
+    async def _extract_with_llm(self, chat_log: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
         import json as _json
 
         existing_concepts = await self._kb.list_concepts()
@@ -275,6 +275,10 @@ class MaintainKBTool(Tool):
 仅返回 JSON，不要其他文字：
 {{"concepts":[{{"name":"","description":"","tags":[]}}],"relationships":[{{"from":"","to":"","type":"related"}}],"summary":""}}"""
 
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": chat_log},
+        ]
         result = await self._llm.complete(messages, temperature=0.3, max_tokens=2048)
         text = result.get("content", "")
 
@@ -300,7 +304,7 @@ class MaintainKBTool(Tool):
         if len(concept_files) < 2:
             return
 
-        concept_list: list[dict] = []
+        concept_list: list[dict[str, Any]] = []
         for fname in concept_files:
             slug = fname.replace(".md", "")
             try:
