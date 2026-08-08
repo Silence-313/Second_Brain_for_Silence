@@ -140,7 +140,11 @@ class KnowledgeBaseManager:
             return []
 
     async def mark_concept_relationship(self, name_a: str, name_b: str, weight: float = 0.8) -> None:
-        from agent.memory.store import _encode_yaml_frontmatter, _get_str_list, _parse_yaml_frontmatter
+        from agent.memory.store import (
+            _encode_yaml_frontmatter,
+            _get_str_list,
+            _parse_yaml_frontmatter,
+        )
 
         safe_a = name_a.replace("/", "-").replace(" ", "-")
         safe_b = name_b.replace("/", "-").replace(" ", "-")

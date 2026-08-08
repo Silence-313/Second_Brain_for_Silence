@@ -290,6 +290,7 @@ def api_kb_graph():
 
 async def _build_graph_data(kb) -> dict:
     import re
+
     import yaml
 
     concept_files = await kb.list_concepts()

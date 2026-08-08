@@ -212,8 +212,15 @@ class Agent:
         # Knowledge Base Tools
         if self._knowledge_base is not None:
             from agent.knowledge.tools import (
-                GetKBIndexTool, GetKBOverviewTool, ListKBConceptsTool, ListKBSummariesTool,
-                MaintainKBTool, ReadKBFileTool, SearchKBTool, WriteKBConceptTool, WriteKBSummaryTool,
+                GetKBIndexTool,
+                GetKBOverviewTool,
+                ListKBConceptsTool,
+                ListKBSummariesTool,
+                MaintainKBTool,
+                ReadKBFileTool,
+                SearchKBTool,
+                WriteKBConceptTool,
+                WriteKBSummaryTool,
             )
             self._tool_registry.register(ListKBSummariesTool(kb_manager=self._knowledge_base))
             self._tool_registry.register(ListKBConceptsTool(kb_manager=self._knowledge_base))
