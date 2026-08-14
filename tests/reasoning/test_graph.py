@@ -8,10 +8,42 @@ class TestConceptGraphBuilder:
     @staticmethod
     def _make_concepts() -> list[Concept]:
         return [
-            Concept(id="c1", name="ML", slug="ml", confidence=0.9, source_episodes=["ep1", "ep2"], related=["dl", "nn"], tags=["ai", "ml"]),
-            Concept(id="c2", name="DL", slug="dl", confidence=0.85, source_episodes=["ep2", "ep3"], related=["ml"], tags=["ai", "dl"]),
-            Concept(id="c3", name="NN", slug="nn", confidence=0.8, source_episodes=["ep3"], related=["ml", "dl"], tags=["ai", "neural"]),
-            Concept(id="c4", name="Python", slug="python", confidence=0.9, source_episodes=["ep4"], related=[], tags=["code"]),
+            Concept(
+                id="c1",
+                name="ML",
+                slug="ml",
+                confidence=0.9,
+                source_episodes=["ep1", "ep2"],
+                related=["dl", "nn"],
+                tags=["ai", "ml"],
+            ),
+            Concept(
+                id="c2",
+                name="DL",
+                slug="dl",
+                confidence=0.85,
+                source_episodes=["ep2", "ep3"],
+                related=["ml"],
+                tags=["ai", "dl"],
+            ),
+            Concept(
+                id="c3",
+                name="NN",
+                slug="nn",
+                confidence=0.8,
+                source_episodes=["ep3"],
+                related=["ml", "dl"],
+                tags=["ai", "neural"],
+            ),
+            Concept(
+                id="c4",
+                name="Python",
+                slug="python",
+                confidence=0.9,
+                source_episodes=["ep4"],
+                related=[],
+                tags=["code"],
+            ),
         ]
 
     def test_build_full(self) -> None:

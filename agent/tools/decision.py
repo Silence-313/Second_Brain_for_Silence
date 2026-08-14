@@ -49,10 +49,10 @@ class ToolDecisionPolicy:
         prompt = f"""决定是否使用工具或技能来回答用户查询。
 
 ## 可用工具
-{tool_descriptions or '(无)'}
+{tool_descriptions or "(无)"}
 
 ## 可用技能
-{skill_descriptions or '(无)'}
+{skill_descriptions or "(无)"}
 
 ## 决策规则
 1. 技能优于工具
@@ -60,8 +60,8 @@ class ToolDecisionPolicy:
 3. 如果直接回答即可，选择 none
 
 ## 上下文
-{wiki_context[:500] if wiki_context else '(无)'}
-{concept_context[:500] if concept_context else '(无)'}
+{wiki_context[:500] if wiki_context else "(无)"}
+{concept_context[:500] if concept_context else "(无)"}
 
 ## 用户查询
 {query}
@@ -134,7 +134,9 @@ class ToolDecisionPolicy:
             kw in query_lower for kw in ["搜索", "查一下", "搜一下", "search"]
         ):
             if "web_search" in tool_names:
-                result.update(use_tool=True, tool_name="web_search", reason="search intent detected")
+                result.update(
+                    use_tool=True, tool_name="web_search", reason="search intent detected"
+                )
 
         # Date mentions → get_todos
         elif any(kw in query_lower for kw in ["今天", "明天", "日期", "待办", "todo"]):
@@ -144,7 +146,9 @@ class ToolDecisionPolicy:
         # Todo creation
         elif any(kw in query for kw in ["添加待办", "记一下", "安排", "提醒我"]):
             if "add_todos" in tool_names:
-                result.update(use_tool=True, tool_name="add_todos", reason="add todo intent detected")
+                result.update(
+                    use_tool=True, tool_name="add_todos", reason="add todo intent detected"
+                )
 
         # File reading
         elif any(kw in query_lower for kw in ["读文件", "打开文件", "读取", "read file"]):

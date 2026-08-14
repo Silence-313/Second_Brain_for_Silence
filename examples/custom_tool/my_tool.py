@@ -26,8 +26,14 @@ class CalculatorTool(Tool):
                 expression,
                 {"__builtins__": {}},
                 {
-                    "abs": abs, "round": round, "min": min, "max": max,
-                    "sum": sum, "pow": pow, "int": int, "float": float,
+                    "abs": abs,
+                    "round": round,
+                    "min": min,
+                    "max": max,
+                    "sum": sum,
+                    "pow": pow,
+                    "int": int,
+                    "float": float,
                 },
             )
             return ToolResult(

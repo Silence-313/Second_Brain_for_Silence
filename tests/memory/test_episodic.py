@@ -26,7 +26,11 @@ class TestEpisodicMemory:
 
     def test_mark_accessed(self) -> None:
         em = EpisodicMemory()
-        em.add(Episode(id="ep-1", type="event", summary="test", decay_score=0.5, marked_for_removal=True))
+        em.add(
+            Episode(
+                id="ep-1", type="event", summary="test", decay_score=0.5, marked_for_removal=True
+            )
+        )
         assert em.mark_accessed("ep-1")
         entry = em.get("ep-1")
         assert entry is not None
@@ -48,13 +52,24 @@ class TestEpisodicMemory:
     def test_apply_decay(self) -> None:
         em = EpisodicMemory()
         old_time = datetime.now(UTC) - timedelta(hours=100)
-        em.add(Episode(id="ep-1", type="event", summary="old", importance_score=0.8, last_access_time=old_time, usage_frequency=0))
+        em.add(
+            Episode(
+                id="ep-1",
+                type="event",
+                summary="old",
+                importance_score=0.8,
+                last_access_time=old_time,
+                usage_frequency=0,
+            )
+        )
         decayed = em.apply_decay()
         assert decayed >= 0
 
     def test_search(self) -> None:
         em = EpisodicMemory()
-        em.add(Episode(id="ep-1", type="event", summary="python programming", tags=["code", "python"]))
+        em.add(
+            Episode(id="ep-1", type="event", summary="python programming", tags=["code", "python"])
+        )
         em.add(Episode(id="ep-2", type="goal", summary="learn rust", tags=["code", "rust"]))
         results = em.search("python", top_k=5)
         assert len(results) >= 1

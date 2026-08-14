@@ -29,9 +29,7 @@ class FeedbackProcessor:
         self._insights_reinforced: int = 0
         self._policy_updates: int = 0
 
-    async def process(
-        self, reasoning: ReasoningResult, query: str
-    ) -> None:
+    async def process(self, reasoning: ReasoningResult, query: str) -> None:
         trace = ReasoningTrace(
             id=f"trace-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{self._cycles_run}",
             query=query,

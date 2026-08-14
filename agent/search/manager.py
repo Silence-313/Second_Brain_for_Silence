@@ -83,9 +83,7 @@ class SearchManager:
         )
 
     @staticmethod
-    def _rank(
-        results: list[SearchResult], query: str
-    ) -> list[SearchResult]:
+    def _rank(results: list[SearchResult], query: str) -> list[SearchResult]:
         query_lower = query.lower()
         query_terms = set(re.findall(r"[a-zA-Z一-鿿]{2,}", query_lower))
 

@@ -15,7 +15,7 @@ class _TodoStore:
 
     def add(self, text: str, due: str | None = None, priority: str = "medium") -> dict[str, Any]:
         todo = {
-            "id": f"todo-{len(self._todos)+1:04d}",
+            "id": f"todo-{len(self._todos) + 1:04d}",
             "text": text,
             "due": due,
             "priority": priority,
@@ -58,9 +58,7 @@ class GetTodosTool(Tool):
     }
 
     async def execute(self, args: dict[str, Any]) -> ToolResult:
-        todos = _store.list_all(
-            status=args.get("status"), priority=args.get("priority")
-        )
+        todos = _store.list_all(status=args.get("status"), priority=args.get("priority"))
         return ToolResult(success=True, data={"todos": todos, "count": len(todos)})
 
 

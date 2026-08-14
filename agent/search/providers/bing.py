@@ -31,9 +31,9 @@ class BingSearchProvider(SearchProvider):
         blocks = re.findall(r'<li class="b_algo"[^>]*>(.*?)</li>', html, re.DOTALL)
 
         for block in blocks[:num_results]:
-            title_m = re.search(r'<h2[^>]*><a[^>]*>(.*?)</a>', block, re.DOTALL)
+            title_m = re.search(r"<h2[^>]*><a[^>]*>(.*?)</a>", block, re.DOTALL)
             url_m = re.search(r'<a[^>]*href="(https?://[^"]+)"', block)
-            snippet_m = re.search(r'<p[^>]*>(.*?)</p>', block, re.DOTALL)
+            snippet_m = re.search(r"<p[^>]*>(.*?)</p>", block, re.DOTALL)
 
             if title_m:
                 results.append(

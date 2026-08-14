@@ -33,9 +33,7 @@ class ConceptGraphBuilder:
 
         return ConceptGraph(nodes=nodes, edges=edges)
 
-    def build_subgraph(
-        self, full_graph: ConceptGraph, seed_slugs: list[str]
-    ) -> ConceptSubgraph:
+    def build_subgraph(self, full_graph: ConceptGraph, seed_slugs: list[str]) -> ConceptSubgraph:
         seed_set = {s for s in seed_slugs if s in full_graph.nodes}
         if not seed_set:
             return ConceptSubgraph()
@@ -49,9 +47,7 @@ class ConceptGraphBuilder:
 
         subgraph_slugs = seed_set | neighbor_slugs
         subgraph_nodes = {
-            slug: node
-            for slug, node in full_graph.nodes.items()
-            if slug in subgraph_slugs
+            slug: node for slug, node in full_graph.nodes.items() if slug in subgraph_slugs
         }
         subgraph_edges = [
             edge
@@ -61,9 +57,7 @@ class ConceptGraphBuilder:
 
         self._compute_degrees(subgraph_nodes, subgraph_edges)
 
-        central = sorted(
-            subgraph_nodes.values(), key=lambda n: n.degree, reverse=True
-        )
+        central = sorted(subgraph_nodes.values(), key=lambda n: n.degree, reverse=True)
         central_concepts = [n.slug for n in central[:3] if n.degree > 0]
 
         return ConceptSubgraph(
@@ -106,9 +100,7 @@ class ConceptGraphBuilder:
                 if shared:
                     min_sources = min(len(a.source_episodes), len(b.source_episodes))
                     denominator = max(2, min_sources)
-                    weight = round(
-                        min(1.0, 0.3 + len(shared) / denominator), 4
-                    )
+                    weight = round(min(1.0, 0.3 + len(shared) / denominator), 4)
                     edges.append(
                         ConceptGraphEdge(
                             from_slug=a.slug,
@@ -124,9 +116,7 @@ class ConceptGraphBuilder:
                 shared_tags = set(a.tags) & set(b.tags)
                 if shared_tags:
                     max_tags = max(len(a.tags), len(b.tags), 1)
-                    weight = round(
-                        min(1.0, 0.3 + len(shared_tags) / max_tags), 4
-                    )
+                    weight = round(min(1.0, 0.3 + len(shared_tags) / max_tags), 4)
                     edges.append(
                         ConceptGraphEdge(
                             from_slug=a.slug,
@@ -139,9 +129,7 @@ class ConceptGraphBuilder:
         return edges
 
     @staticmethod
-    def _compute_degrees(
-        nodes: dict[str, ConceptGraphNode], edges: list[ConceptGraphEdge]
-    ) -> None:
+    def _compute_degrees(nodes: dict[str, ConceptGraphNode], edges: list[ConceptGraphEdge]) -> None:
         degree: dict[str, int] = dict.fromkeys(nodes, 0)
         for edge in edges:
             degree[edge.from_slug] = degree.get(edge.from_slug, 0) + 1

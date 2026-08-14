@@ -57,9 +57,7 @@ class MutationQueue:
                 existing = merged.get(f"update:{key}")
                 if existing and hasattr(existing, "delta") and hasattr(m, "delta"):
                     merged[f"update:{key}"] = existing.model_copy(
-                        update={
-                            "delta": max(-0.05, min(0.05, existing.delta + m.delta))
-                        }
+                        update={"delta": max(-0.05, min(0.05, existing.delta + m.delta))}
                     )
                     continue
                 merged[f"update:{key}"] = m

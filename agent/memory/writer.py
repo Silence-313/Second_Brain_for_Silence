@@ -74,9 +74,7 @@ class MemoryWriter:
 
         return decisions
 
-    async def commit(
-        self, decisions: list[MemoryWriteDecision], interaction: Interaction
-    ) -> None:
+    async def commit(self, decisions: list[MemoryWriteDecision], interaction: Interaction) -> None:
         for decision in decisions:
             if decision.action == "ignore":
                 continue
@@ -217,9 +215,7 @@ class MemoryWriter:
                 action="append",
                 reason=f"tool used: {interaction.tool_used}",
             )
-        return MemoryWriteDecision(
-            type="tool", importance=0.0, action="ignore", reason="no tool"
-        )
+        return MemoryWriteDecision(type="tool", importance=0.0, action="ignore", reason="no tool")
 
     def _consolidate(self, new_entry: Episode) -> bool:
         existing = self._episodic.get_active_entries()

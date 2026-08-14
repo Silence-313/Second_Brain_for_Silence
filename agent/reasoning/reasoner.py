@@ -24,32 +24,20 @@ class ConceptReasoner:
         r2 = self._strategy_pattern_matching(query, subgraph, full_graph)
         r3 = self._strategy_abstraction(subgraph)
 
-        key_concepts = list(
-            dict.fromkeys(r1.key_concepts + r2.key_concepts + r3.key_concepts)
-        )
-        relationships = list(
-            dict.fromkeys(r1.relationships + r2.relationships + r3.relationships)
-        )
+        key_concepts = list(dict.fromkeys(r1.key_concepts + r2.key_concepts + r3.key_concepts))
+        relationships = list(dict.fromkeys(r1.relationships + r2.relationships + r3.relationships))
         insights = list(
-            dict.fromkeys(
-                r1.inferred_insights + r2.inferred_insights + r3.inferred_insights
-            )
+            dict.fromkeys(r1.inferred_insights + r2.inferred_insights + r3.inferred_insights)
         )
         contradictions = list(
-            dict.fromkeys(
-                r1.contradictions + r2.contradictions + r3.contradictions
-            )
+            dict.fromkeys(r1.contradictions + r2.contradictions + r3.contradictions)
         )
         bridging = list(
-            dict.fromkeys(
-                r1.bridging_concepts + r2.bridging_concepts + r3.bridging_concepts
-            )
+            dict.fromkeys(r1.bridging_concepts + r2.bridging_concepts + r3.bridging_concepts)
         )
         clusters = r3.concept_clusters if r3.concept_clusters else r1.concept_clusters
 
-        confidence = round(
-            0.4 * r1.confidence + 0.3 * r2.confidence + 0.3 * r3.confidence, 4
-        )
+        confidence = round(0.4 * r1.confidence + 0.3 * r2.confidence + 0.3 * r3.confidence, 4)
 
         return ReasoningResult(
             key_concepts=key_concepts,
@@ -136,9 +124,7 @@ class ConceptReasoner:
                 for other_slug, other_node in subgraph.nodes.items():
                     if other_slug == slug:
                         continue
-                    conflict_tags = set(node.tags) & {
-                        f"非{t}" for t in other_node.tags
-                    }
+                    conflict_tags = set(node.tags) & {f"非{t}" for t in other_node.tags}
                     if conflict_tags:
                         contradictions.append(
                             f"{node.name} 与 {other_node.name} 存在潜在矛盾: {conflict_tags}"
@@ -166,18 +152,15 @@ class ConceptReasoner:
 
         for cluster in clusters:
             if len(cluster) >= 2:
-                names = [
-                    subgraph.nodes[s].name
-                    for s in cluster
-                    if s in subgraph.nodes
-                ]
+                names = [subgraph.nodes[s].name for s in cluster if s in subgraph.nodes]
                 tags: set[str] = set()
                 for s in cluster:
                     if s in subgraph.nodes:
                         tags |= set(subgraph.nodes[s].tags)
                 theme = ", ".join(sorted(tags)[:3])
                 insights.append(
-                    f"概念群 [{', '.join(names)}] 共享主题: {theme}" if theme
+                    f"概念群 [{', '.join(names)}] 共享主题: {theme}"
+                    if theme
                     else f"概念群 [{', '.join(names)}] 紧密关联"
                 )
 
@@ -241,9 +224,7 @@ class ConceptReasoner:
         return clusters
 
     @staticmethod
-    def _find_bridging(
-        subgraph: ConceptSubgraph, clusters: list[list[str]]
-    ) -> list[str]:
+    def _find_bridging(subgraph: ConceptSubgraph, clusters: list[list[str]]) -> list[str]:
         if len(clusters) < 2:
             return []
 

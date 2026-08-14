@@ -7,11 +7,11 @@ from pydantic import BaseModel, Field
 
 
 class Intent(BaseModel, frozen=True):
-    action: Literal["search", "read", "write", "analyze", "summarize", "chat", "maintain", "execute"] = "chat"
+    action: Literal[
+        "search", "read", "write", "analyze", "summarize", "chat", "maintain", "execute"
+    ] = "chat"
     domain: Literal["code", "video", "paper", "local_file", "knowledge", "general"] = "general"
-    platform: Literal[
-        "bilibili", "github", "arxiv", "obsidian", "local", "web", "none"
-    ] = "none"
+    platform: Literal["bilibili", "github", "arxiv", "obsidian", "local", "web", "none"] = "none"
     confidence: float = Field(default=0.5, ge=0, le=1)
     query: str = ""
 

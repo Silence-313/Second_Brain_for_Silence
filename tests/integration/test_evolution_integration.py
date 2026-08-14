@@ -56,13 +56,19 @@ class TestEvolutionIntegration:
         # Add one recent and one old entry
         old_time = datetime.now(UTC) - timedelta(hours=300)
         recent = Episode(
-            id="ep-recent", type="event", summary="recent",
-            importance_score=0.7, usage_frequency=3,
+            id="ep-recent",
+            type="event",
+            summary="recent",
+            importance_score=0.7,
+            usage_frequency=3,
             last_access_time=datetime.now(UTC),
         )
         old = Episode(
-            id="ep-old", type="event", summary="old",
-            importance_score=0.7, usage_frequency=0,
+            id="ep-old",
+            type="event",
+            summary="old",
+            importance_score=0.7,
+            usage_frequency=0,
             last_access_time=old_time,
         )
         episodic.add(recent)

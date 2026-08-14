@@ -22,9 +22,7 @@ class ConceptEvolver:
         self._store = store
         self._mutation_queue = mutation_queue
 
-    async def evolve(
-        self, usage_counts: dict[str, int] | None = None
-    ) -> EvolutionResult:
+    async def evolve(self, usage_counts: dict[str, int] | None = None) -> EvolutionResult:
         usage = usage_counts or {}
 
         concepts = await self._load_concepts()

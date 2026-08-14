@@ -95,6 +95,7 @@ def _run_full_pipeline(message: str, session_id: str, history: list[dict] | None
 
 # ── REST API ──
 
+
 @app.post("/api/chat")
 def api_chat():
     message = request.json.get("message", "")  # type: ignore[union-attr]
@@ -119,7 +120,9 @@ def api_chat_stream():
         t0 = time.monotonic()
 
         async def run():
-            ctx = PipelineContext(session_id=session_id, user_input_raw=message, chat_history=history or [])
+            ctx = PipelineContext(
+                session_id=session_id, user_input_raw=message, chat_history=history or []
+            )
 
             # Run pre-generate stages (priority < 8)
             for stage in _agent._pipeline._stages:
@@ -192,11 +195,15 @@ def api_chat_stream():
 
                 # Build internal state
                 internal: dict = {"stage_timings": dict(ctx.stage_timings), "errors": []}
-                if hasattr(ctx, 'router_result') and ctx.router_result and hasattr(ctx.router_result, 'tool'):
+                if (
+                    hasattr(ctx, "router_result")
+                    and ctx.router_result
+                    and hasattr(ctx.router_result, "tool")
+                ):
                     internal["router"] = {
                         "tool": ctx.router_result.tool,
-                        "confidence": getattr(ctx.router_result, 'confidence', 0),
-                        "reason": getattr(ctx.router_result, 'reason', ''),
+                        "confidence": getattr(ctx.router_result, "confidence", 0),
+                        "reason": getattr(ctx.router_result, "reason", ""),
                     }
                 mc = ctx.memory_context or {}
                 internal["memory"] = {
@@ -207,7 +214,10 @@ def api_chat_stream():
                 kb = _agent._knowledge_base
                 if kb is not None:
                     concepts = asyncio.run(kb.list_concepts())
-                    internal["kb"] = {"prompt_injected": len(concepts) > 0, "concept_count": len(concepts)}
+                    internal["kb"] = {
+                        "prompt_injected": len(concepts) > 0,
+                        "concept_count": len(concepts),
+                    }
                 reasoning = mc.get("reasoning_context")
                 if reasoning and hasattr(reasoning, "key_concepts"):
                     internal["reasoning"] = {
@@ -221,7 +231,7 @@ def api_chat_stream():
 
         thread.join()
 
-    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
 
 
 @app.get("/api/health")
@@ -239,15 +249,19 @@ def api_health():
         except Exception:
             pass
 
-    return jsonify({
-        "status": health.status, "version": health.version, "model": health.model,
-        "memory_episodic_count": episodic_count,
-        "cognitive_health_score": health.cognitive_health_score,
-        "tool_count": state.get("tool_count", 0),
-        "skill_count": state.get("skill_count", 0),
-        "kb_enabled": kb_enabled,
-        "kb_path": _agent._knowledge_base.base_path if kb_enabled else "",
-    })
+    return jsonify(
+        {
+            "status": health.status,
+            "version": health.version,
+            "model": health.model,
+            "memory_episodic_count": episodic_count,
+            "cognitive_health_score": health.cognitive_health_score,
+            "tool_count": state.get("tool_count", 0),
+            "skill_count": state.get("skill_count", 0),
+            "kb_enabled": kb_enabled,
+            "kb_path": _agent._knowledge_base.base_path if kb_enabled else "",
+        }
+    )
 
 
 @app.post("/api/reset")
@@ -265,10 +279,14 @@ def api_kb_info():
         return jsonify({"enabled": False})
     summaries = asyncio.run(kb.list_summaries())
     concepts = asyncio.run(kb.list_concepts())
-    return jsonify({
-        "enabled": True, "path": kb.base_path,
-        "summary_count": len(summaries), "concept_count": len(concepts),
-    })
+    return jsonify(
+        {
+            "enabled": True,
+            "path": kb.base_path,
+            "summary_count": len(summaries),
+            "concept_count": len(concepts),
+        }
+    )
 
 
 @app.get("/api/kb/search")
@@ -321,21 +339,28 @@ async def _build_graph_data(kb) -> dict:
                 related = [r.strip() for r in related.split(",") if r.strip()]
 
             all_tags[slug] = tags
-            nodes.append({
-                "id": slug,
-                "label": display_name,
-                "confidence": 0.7,
-                "degree": len(related),
-                "tags": tags,
-            })
+            nodes.append(
+                {
+                    "id": slug,
+                    "label": display_name,
+                    "confidence": 0.7,
+                    "degree": len(related),
+                    "tags": tags,
+                }
+            )
 
             for r in related:
                 edges.append({"from": slug, "to": r, "weight": 0.8, "type": "related"})
         except Exception:
-            nodes.append({
-                "id": slug, "label": slug, "confidence": 0.5,
-                "degree": 0, "tags": [],
-            })
+            nodes.append(
+                {
+                    "id": slug,
+                    "label": slug,
+                    "confidence": 0.5,
+                    "degree": 0,
+                    "tags": [],
+                }
+            )
 
     # Deduplicate edges
     seen = set()
@@ -355,11 +380,19 @@ async def _build_graph_data(kb) -> dict:
                 key = tuple(sorted([slugs[i], slugs[j]]))
                 if key not in seen:
                     seen.add(key)
-                    deduped.append({
-                        "from": slugs[i], "to": slugs[j],
-                        "weight": round(0.3 + len(shared) / max(len(all_tags[slugs[i]]), len(all_tags[slugs[j]])), 2),
-                        "type": "tag-overlap",
-                    })
+                    deduped.append(
+                        {
+                            "from": slugs[i],
+                            "to": slugs[j],
+                            "weight": round(
+                                0.3
+                                + len(shared)
+                                / max(len(all_tags[slugs[i]]), len(all_tags[slugs[j]])),
+                                2,
+                            ),
+                            "type": "tag-overlap",
+                        }
+                    )
 
     return {
         "nodes": nodes,
@@ -370,6 +403,7 @@ async def _build_graph_data(kb) -> dict:
 
 
 # ── Web UI ──
+
 
 @app.get("/")
 def index():

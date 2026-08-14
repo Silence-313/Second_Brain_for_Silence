@@ -27,7 +27,9 @@ class ToolMemory:
         pattern = self._extract_pattern(query)
         pattern_counts = dict(record.pattern_counts)
         pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
-        top_patterns = sorted(pattern_counts, key=lambda k: pattern_counts.get(k, 0), reverse=True)[:10]
+        top_patterns = sorted(pattern_counts, key=lambda k: pattern_counts.get(k, 0), reverse=True)[
+            :10
+        ]
 
         context_eff = dict(record.context_effectiveness)
         if context_type:
@@ -41,9 +43,7 @@ class ToolMemory:
         new_success = record.success_count + (1 if success else 0)
         new_failure = record.failure_count + (0 if success else 1)
         new_total = new_success + new_failure
-        new_avg_latency = (
-            record.avg_latency_ms + (latency_ms - record.avg_latency_ms) / new_total
-        )
+        new_avg_latency = record.avg_latency_ms + (latency_ms - record.avg_latency_ms) / new_total
         new_avg_quality = (
             record.avg_response_quality
             + (response_quality - record.avg_response_quality) / new_total
@@ -105,9 +105,7 @@ class ToolMemory:
     def serialize(self) -> str:
         import json
 
-        data = {
-            name: r.model_dump(mode="json") for name, r in self._records.items()
-        }
+        data = {name: r.model_dump(mode="json") for name, r in self._records.items()}
         return json.dumps(data, ensure_ascii=False, default=str)
 
     def deserialize(self, json_str: str) -> None:

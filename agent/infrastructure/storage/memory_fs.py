@@ -23,7 +23,7 @@ class InMemoryFileStorage:
         result: set[str] = set()
         for fpath in self._files:
             if fpath.startswith(prefix):
-                relative = fpath[len(prefix):]
+                relative = fpath[len(prefix) :]
                 name = relative.split("/")[0]
                 result.add(name)
         return sorted(result)

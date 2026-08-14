@@ -6,9 +6,7 @@ from agent.pipeline.context import PipelineContext
 from agent.pipeline.protocol import PipelineStage
 
 _CODE_BLOCK_RE = re.compile(r"```[\s\S]*?```", re.DOTALL)
-_SYSTEM_INJECT_RE = re.compile(
-    r"(?:system|assistant)\s*:\s*", re.IGNORECASE
-)
+_SYSTEM_INJECT_RE = re.compile(r"(?:system|assistant)\s*:\s*", re.IGNORECASE)
 
 
 class SanitizeStage(PipelineStage):

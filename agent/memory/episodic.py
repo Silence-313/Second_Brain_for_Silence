@@ -64,7 +64,9 @@ class EpisodicMemory:
                 continue
             hours_since = (now - entry.last_access_time).total_seconds() / 3600
             effective_rate = 0.03 * (1 - entry.usage_frequency * 0.6)
-            decay = round(entry.importance_score * math.exp(-effective_rate * max(hours_since, 0)), 4)
+            decay = round(
+                entry.importance_score * math.exp(-effective_rate * max(hours_since, 0)), 4
+            )
             if decay < 0.25 and entry.usage_frequency == 0 and hours_since >= 14:
                 self._entries[eid] = entry.model_copy(
                     update={"decay_score": decay, "marked_for_removal": True}
@@ -104,9 +106,7 @@ class EpisodicMemory:
                 if tag.lower() in query_lower:
                     score += 1.5
 
-            hours_since = (
-                datetime.now(UTC) - entry.last_access_time
-            ).total_seconds() / 3600
+            hours_since = (datetime.now(UTC) - entry.last_access_time).total_seconds() / 3600
             recency_boost = max(0.0, 1.0 - hours_since / 168) * 0.3
             usefulness_bonus = entry.usefulness_score * 0.2
 
@@ -131,9 +131,7 @@ class EpisodicMemory:
     def serialize(self) -> str:
         data = {
             "version": 1,
-            "entries": [
-                e.model_dump(mode="json") for e in self._entries.values()
-            ],
+            "entries": [e.model_dump(mode="json") for e in self._entries.values()],
         }
         return json.dumps(data, ensure_ascii=False, default=str)
 

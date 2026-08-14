@@ -14,7 +14,13 @@ class _MockProvider(SearchProvider):
 
     async def search(self, query: str, num_results: int = 10) -> list[SearchResult]:
         return [
-            SearchResult(title=f"Result {i}", url=f"https://example.com/{i}", snippet=f"Snippet {i}", provider="mock", domain="web")
+            SearchResult(
+                title=f"Result {i}",
+                url=f"https://example.com/{i}",
+                snippet=f"Snippet {i}",
+                provider="mock",
+                domain="web",
+            )
             for i in range(min(3, num_results))
         ]
 

@@ -8,8 +8,17 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "add_todos": {
         "weight": 1.0,
         "keywords": [
-            "添加待办", "安排", "计划", "加入待办", "新增任务", "待办事项",
-            "提醒我", "创建任务", "add todo", "创建待办", "记一下",
+            "添加待办",
+            "安排",
+            "计划",
+            "加入待办",
+            "新增任务",
+            "待办事项",
+            "提醒我",
+            "创建任务",
+            "add todo",
+            "创建待办",
+            "记一下",
         ],
         "exclusives": ["添加待办", "add todo", "记一下"],
         "patterns": [re.compile(r"添加.*待办"), re.compile(r"记.*一下"), re.compile(r"add.*todo")],
@@ -17,17 +26,38 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "get_todos": {
         "weight": 0.9,
         "keywords": [
-            "待办", "任务列表", "进度", "还有什么", "查看待办", "今天要做什么",
-            "还有什么事", "待办事项", "任务进度", "get todo", "还有哪些",
+            "待办",
+            "任务列表",
+            "进度",
+            "还有什么",
+            "查看待办",
+            "今天要做什么",
+            "还有什么事",
+            "待办事项",
+            "任务进度",
+            "get todo",
+            "还有哪些",
         ],
         "exclusives": ["查看待办", "还有什么事", "今天要做什么"],
-        "patterns": [re.compile(r"查看.*待办"), re.compile(r"还有.*什么"), re.compile(r"今天.*做什么")],
+        "patterns": [
+            re.compile(r"查看.*待办"),
+            re.compile(r"还有.*什么"),
+            re.compile(r"今天.*做什么"),
+        ],
     },
     "get_current_time": {
         "weight": 0.85,
         "keywords": [
-            "几点", "日期", "时间", "今天几号", "星期几", "现在几点",
-            "当前时间", "今天日期", "what time", "几月几号",
+            "几点",
+            "日期",
+            "时间",
+            "今天几号",
+            "星期几",
+            "现在几点",
+            "当前时间",
+            "今天日期",
+            "what time",
+            "几月几号",
         ],
         "exclusives": ["几点", "日期", "现在几点"],
         "patterns": [re.compile(r"现在.*几点"), re.compile(r"今天.*几号"), re.compile(r"星期几")],
@@ -35,9 +65,21 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "web_search": {
         "weight": 0.7,
         "keywords": [
-            "搜索", "查一下", "最新", "网上", "搜索引擎", "查找",
-            "帮我查", "搜一下", "search", "查一查", "帮我搜",
-            "帮我找", "查查", "最近新闻", "有没有关于",
+            "搜索",
+            "查一下",
+            "最新",
+            "网上",
+            "搜索引擎",
+            "查找",
+            "帮我查",
+            "搜一下",
+            "search",
+            "查一查",
+            "帮我搜",
+            "帮我找",
+            "查查",
+            "最近新闻",
+            "有没有关于",
         ],
         "exclusives": ["搜索", "搜一下", "帮我查"],
         "patterns": [re.compile(r"搜索.*一下"), re.compile(r"帮我查.*"), re.compile(r"搜.*一下")],
@@ -45,8 +87,17 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "wiki_search": {
         "weight": 0.75,
         "keywords": [
-            "笔记", "知识库", "我记得", "之前记过", "wiki", "我的笔记",
-            "查笔记", "记录", "知识", "我记", "看看笔记",
+            "笔记",
+            "知识库",
+            "我记得",
+            "之前记过",
+            "wiki",
+            "我的笔记",
+            "查笔记",
+            "记录",
+            "知识",
+            "我记",
+            "看看笔记",
         ],
         "exclusives": ["笔记", "知识库", "wiki"],
         "patterns": [re.compile(r"笔记.*有"), re.compile(r"我.*记过"), re.compile(r"知识库.*有")],
@@ -54,8 +105,17 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "memory_search": {
         "weight": 0.6,
         "keywords": [
-            "记得", "回忆", "之前", "上次", "以前说过", "你还记得",
-            "想起", "记忆", "不记得", "忘了", "remember",
+            "记得",
+            "回忆",
+            "之前",
+            "上次",
+            "以前说过",
+            "你还记得",
+            "想起",
+            "记忆",
+            "不记得",
+            "忘了",
+            "remember",
         ],
         "exclusives": ["记得", "回忆", "你还记得"],
         "patterns": [re.compile(r"你还记得"), re.compile(r"之前.*说过"), re.compile(r"上次.*说过")],
@@ -63,11 +123,19 @@ _TOOL_PATTERNS: dict[str, dict[str, object]] = {
     "kb_maintain": {
         "weight": 0.9,
         "keywords": [
-            "维护知识库", "整理知识", "消化对话", "更新知识库", "整理笔记",
+            "维护知识库",
+            "整理知识",
+            "消化对话",
+            "更新知识库",
+            "整理笔记",
             "知识库维护",
         ],
         "exclusives": ["维护知识库", "知识库维护"],
-        "patterns": [re.compile(r"维护.*知识"), re.compile(r"整理.*知识"), re.compile(r"消化.*对话")],
+        "patterns": [
+            re.compile(r"维护.*知识"),
+            re.compile(r"整理.*知识"),
+            re.compile(r"消化.*对话"),
+        ],
     },
 }
 
@@ -110,9 +178,7 @@ class ToolRouter:
 
         max_possible = float(_TOOL_PATTERNS.get(best_tool, {}).get("weight", 0.5)) * 5  # type: ignore[arg-type]
         confidence = min(1.0, best_score / max(max_possible, 1))
-        return RouterResult(
-            tool=best_tool, confidence=round(confidence, 4), reason=best_reason
-        )
+        return RouterResult(tool=best_tool, confidence=round(confidence, 4), reason=best_reason)
 
     @staticmethod
     def _score_tool(query: str, pattern_def: dict[str, object]) -> float:
@@ -140,9 +206,7 @@ class ToolRouter:
         return score
 
     @staticmethod
-    def _get_threshold(
-        tool_name: str, telemetry: dict[str, ToolMetrics]
-    ) -> float:
+    def _get_threshold(tool_name: str, telemetry: dict[str, ToolMetrics]) -> float:
         metrics = telemetry.get(tool_name)
         if metrics is None:
             return 0.2

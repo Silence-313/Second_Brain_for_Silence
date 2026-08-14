@@ -50,9 +50,7 @@ class StateMutationEngine:
 
         if isinstance(mutation, ConceptUpdateMutation) and self._store:
             try:
-                await self._store.update_concept_weight(
-                    mutation.concept_name, mutation.delta
-                )
+                await self._store.update_concept_weight(mutation.concept_name, mutation.delta)
                 return True
             except Exception:
                 return False
@@ -68,9 +66,7 @@ class StateMutationEngine:
 
         if isinstance(mutation, ConceptDecayMutation) and self._store:
             try:
-                await self._store.update_concept_weight(
-                    mutation.concept_slug, mutation.delta
-                )
+                await self._store.update_concept_weight(mutation.concept_slug, mutation.delta)
                 return True
             except Exception:
                 return False

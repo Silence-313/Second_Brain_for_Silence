@@ -56,6 +56,8 @@ class TestInMemoryFileStorage:
         async def run():
             await fs.write("/a.md", "a")
             await fs.write("/b.md", "b")
+
         import asyncio
+
         asyncio.run(run())
         assert fs.file_count == 2

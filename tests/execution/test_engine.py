@@ -1,6 +1,5 @@
 """Tests for ExecutionEngine."""
 
-
 from agent.execution.engine import ExecutionEngine
 from agent.planner.plan import ExecutionPlan, PlanStep
 
@@ -18,7 +17,13 @@ class TestExecutionEngine:
     def test_topological_sort(self) -> None:
         engine = ExecutionEngine()
         steps = [
-            PlanStep(step_id="s2", capability_type="tool", capability_name="test", priority=1, depends_on=["s1"]),
+            PlanStep(
+                step_id="s2",
+                capability_type="tool",
+                capability_name="test",
+                priority=1,
+                depends_on=["s1"],
+            ),
             PlanStep(step_id="s1", capability_type="tool", capability_name="test", priority=0),
         ]
         sorted_steps = engine._topological_sort(steps)
@@ -28,8 +33,12 @@ class TestExecutionEngine:
     def test_topological_sort_cycle(self) -> None:
         engine = ExecutionEngine()
         steps = [
-            PlanStep(step_id="s1", capability_type="tool", capability_name="test", depends_on=["s2"]),
-            PlanStep(step_id="s2", capability_type="tool", capability_name="test", depends_on=["s1"]),
+            PlanStep(
+                step_id="s1", capability_type="tool", capability_name="test", depends_on=["s2"]
+            ),
+            PlanStep(
+                step_id="s2", capability_type="tool", capability_name="test", depends_on=["s1"]
+            ),
         ]
         sorted_steps = engine._topological_sort(steps)
         assert len(sorted_steps) == 2  # doesn't crash on cycle

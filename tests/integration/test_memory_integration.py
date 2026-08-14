@@ -126,7 +126,9 @@ class TestMemoryIntegration:
     @pytest.mark.asyncio
     async def test_serialize_roundtrip(self, memory_stack):
         episodic = memory_stack["episodic"]
-        ep = Episode(id="ep-rt-1", type="event", summary="roundtrip test", tags=["test", "integration"])
+        ep = Episode(
+            id="ep-rt-1", type="event", summary="roundtrip test", tags=["test", "integration"]
+        )
         episodic.add(ep)
 
         json_str = episodic.serialize()

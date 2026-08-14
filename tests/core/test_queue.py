@@ -12,10 +12,12 @@ class TestMutationQueue:
 
     def test_add_batch(self) -> None:
         mq = MutationQueue()
-        mq.add_batch([
-            ConceptUpdateMutation(concept_name="a", field="f", delta=0.01),
-            ConceptUpdateMutation(concept_name="b", field="f", delta=0.02),
-        ])
+        mq.add_batch(
+            [
+                ConceptUpdateMutation(concept_name="a", field="f", delta=0.01),
+                ConceptUpdateMutation(concept_name="b", field="f", delta=0.02),
+            ]
+        )
         assert mq.size == 2
 
     def test_deduplicate_concept_updates(self) -> None:

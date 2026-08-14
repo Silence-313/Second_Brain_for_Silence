@@ -69,8 +69,7 @@ class LearnStage(PipelineStage):
                     RetrievalRecord(
                         query=context.user_input_raw,
                         retrieved_docs=[
-                            r.source_path if hasattr(r, "source_path") else ""
-                            for r in wiki
+                            r.source_path if hasattr(r, "source_path") else "" for r in wiki
                         ],
                         used_docs=[],
                         answer_quality=0.5,
@@ -83,6 +82,7 @@ class LearnStage(PipelineStage):
         if self._interaction_count % self._kb_interval == 0 and self._kb:
             try:
                 from agent.knowledge.tools import MaintainKBTool
+
                 tool = MaintainKBTool(kb_manager=self._kb, llm_client=self._llm)
                 await tool.execute({})
             except Exception:

@@ -36,7 +36,12 @@ class ResultVerifier:
                 issues.append("result missing 'data' field")
                 quality = max(0.0, quality - 0.2)
 
-        if hasattr(result, "error") and result.error and hasattr(result, "success") and result.success:
+        if (
+            hasattr(result, "error")
+            and result.error
+            and hasattr(result, "success")
+            and result.success
+        ):
             issues.append("result has error message despite success=True")
             quality = max(0.0, quality - 0.1)
 

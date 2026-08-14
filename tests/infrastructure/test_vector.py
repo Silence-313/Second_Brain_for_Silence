@@ -10,9 +10,18 @@ class TestTfidfVectorStore:
     async def test_build_and_search(self) -> None:
         store = TfidfVectorStore()
         docs = [
-            {"path": "doc1.md", "content": "Python is a great programming language for AI and machine learning"},
-            {"path": "doc2.md", "content": "Rust is a systems programming language focused on safety"},
-            {"path": "doc3.md", "content": "深度学习是人工智能的一个重要分支，Python是常用的编程语言"},
+            {
+                "path": "doc1.md",
+                "content": "Python is a great programming language for AI and machine learning",
+            },
+            {
+                "path": "doc2.md",
+                "content": "Rust is a systems programming language focused on safety",
+            },
+            {
+                "path": "doc3.md",
+                "content": "深度学习是人工智能的一个重要分支，Python是常用的编程语言",
+            },
         ]
         store.build(docs)
         results = await store.search("Python programming", top_k=2)

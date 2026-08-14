@@ -8,7 +8,14 @@ _INTENT_RULES: list[dict[str, Any]] = [
     # Bilibili / video search
     {
         "keywords": ["b站", "bilibili", "哔哩", "视频", "弹幕", "up主", "B站", "bil"],
-        "patterns": [r"[Bb]站.*搜", r"搜.*[Bb]站", r"bilibili.*搜", r"搜.*bilibili", r"搜.*视频", r"看.*视频"],
+        "patterns": [
+            r"[Bb]站.*搜",
+            r"搜.*[Bb]站",
+            r"bilibili.*搜",
+            r"搜.*bilibili",
+            r"搜.*视频",
+            r"看.*视频",
+        ],
         "action": "search",
         "domain": "video",
         "platform": "bilibili",
@@ -93,7 +100,9 @@ class IntentParser:
 
     def parse(self, query: str, context: Any = None) -> Intent:  # MemoryContext | None
         if not query.strip():
-            return Intent(action="chat", domain="general", platform="none", confidence=0.5, query=query)
+            return Intent(
+                action="chat", domain="general", platform="none", confidence=0.5, query=query
+            )
 
         best_match: dict[str, Any] | None = None
         best_score: float = 0.0

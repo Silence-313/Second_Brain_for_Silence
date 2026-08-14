@@ -144,6 +144,7 @@ class DeleteWikiTool(Tool):
         path = args["path"]
 
         import os
+
         if os.path.basename(path) in _PROTECTED_PATHS:
             return ToolResult(success=False, error=f"Protected file: {path}")
 
@@ -205,6 +206,4 @@ class SearchWikiTool(Tool):
                 continue
 
         matches.sort(key=lambda m: m["match_count"], reverse=True)
-        return ToolResult(
-            success=True, data={"results": matches[:10], "count": len(matches)}
-        )
+        return ToolResult(success=True, data={"results": matches[:10], "count": len(matches)})

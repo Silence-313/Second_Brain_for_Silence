@@ -113,7 +113,9 @@ class DriftController:
         signal_penalty = min(1.0, len(signals) * 0.2)
 
         stability = 1.0 - signal_penalty
-        health = round(0.3 * confidence_avg + 0.4 * stability + 0.3 * max(0, 1.0 - signal_penalty), 4)
+        health = round(
+            0.3 * confidence_avg + 0.4 * stability + 0.3 * max(0, 1.0 - signal_penalty), 4
+        )
 
         return DriftMetrics(
             health_score=health,

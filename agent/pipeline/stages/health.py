@@ -30,15 +30,9 @@ class HealthStage(PipelineStage):
             return context
 
         try:
-            concepts = (
-                await self._store.load_concepts()
-                if self._store
-                else []
-            )
+            concepts = await self._store.load_concepts() if self._store else []
             confidences = [c.confidence for c in concepts]
-            _health = self._controller.compute_health(
-                confidences, len(concepts)
-            )
+            _health = self._controller.compute_health(confidences, len(concepts))
         except Exception:
             pass
 

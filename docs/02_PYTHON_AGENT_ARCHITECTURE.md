@@ -425,12 +425,14 @@ class MemoryStore(Protocol[T]):
     async def save(self, data: T) -> None: ...
     async def query(self, **filters) -> list[T]: ...
 
+
 # WorkingMemory (ephemeral)
 class WorkingMemory:
     def push(self, entry: WorkingMemoryEntry) -> None: ...
     def get_last(self, n: int) -> list[WorkingMemoryEntry]: ...
     def get_recent_context(self, max_tokens: int) -> str: ...
     def clear(self) -> None: ...
+
 
 # EpisodicMemory (persistent)
 class EpisodicMemory:
@@ -442,10 +444,13 @@ class EpisodicMemory:
     async def get_active_entries(self) -> list[Episode]: ...
     def format_for_context(self, max_entries: int) -> str: ...
 
+
 # MemoryWriter (post-interaction coordinator)
 class MemoryWriter:
     async def analyze(self, interaction: Interaction) -> list[MemoryWriteDecision]: ...
-    async def commit(self, decisions: list[MemoryWriteDecision], interaction: Interaction) -> None: ...
+    async def commit(
+        self, decisions: list[MemoryWriteDecision], interaction: Interaction
+    ) -> None: ...
     async def run_maintenance(self) -> None: ...
 ```
 
@@ -534,12 +539,16 @@ reason(query, subgraph, full_graph) → ReasoningResult:
 class ConceptExtractor:
     def extract(self, content: str, existing_concepts: list[str]) -> list[ExtractedConcept]: ...
 
+
 class ConceptGraphBuilder:
     def build_full(self, concepts: list[ConceptData]) -> ConceptGraph: ...
     def build_subgraph(self, full: ConceptGraph, seeds: list[str]) -> ConceptSubgraph: ...
 
+
 class ConceptReasoner:
-    def reason(self, query: str, subgraph: ConceptSubgraph, full: ConceptGraph) -> ReasoningResult: ...
+    def reason(
+        self, query: str, subgraph: ConceptSubgraph, full: ConceptGraph
+    ) -> ReasoningResult: ...
 ```
 
 ---
@@ -592,10 +601,13 @@ FallbackStrategy = {
 ```python
 class IntentParser:
     """Parse user query into structured Intent."""
+
     def parse(self, query: str, context: MemoryContext) -> Intent: ...
+
 
 class ExecutionPlanner:
     """Build ExecutionPlan from Intent + available capabilities."""
+
     async def plan(
         self,
         intent: Intent,
@@ -604,8 +616,10 @@ class ExecutionPlanner:
         available_providers: list[SearchProviderInfo],
     ) -> ExecutionPlan: ...
 
+
 class Planner:
     """Orchestrate Intent parsing → Execution planning."""
+
     def __init__(
         self,
         intent_parser: IntentParser,
@@ -644,8 +658,10 @@ class ExecutionEngine:
 
     async def execute(self, plan: ExecutionPlan) -> ExecutionResult: ...
 
+
 class FallbackStrategy:
     """Determine next action when a step fails."""
+
     async def on_failure(
         self,
         step: PlanStep,
@@ -654,9 +670,12 @@ class FallbackStrategy:
         available_alternatives: list[str],
     ) -> FallbackAction: ...  # retry | switch_provider | skip | abort
 
+
 class ResultVerifier:
     """Validate tool execution outputs."""
+
     async def verify(self, result: ToolResult) -> VerificationResult: ...
+
     # VerificationResult: {valid: bool, issues: list[str], quality: float}
 ```
 
@@ -690,10 +709,11 @@ Every capability (Tool, Skill, SearchProvider) implements a common pattern:
 ```python
 class Capability(ABC):
     """Base for all executable capabilities."""
-    name: str                          # unique identifier
-    description: str                   # human-readable
-    version: str                       # semantic version
-    metadata: CapabilityMetadata       # tags, permissions, cost, timeout
+
+    name: str  # unique identifier
+    description: str  # human-readable
+    version: str  # semantic version
+    metadata: CapabilityMetadata  # tags, permissions, cost, timeout
 
     @abstractmethod
     async def execute(self, args: dict, context: ExecutionContext) -> CapabilityResult: ...
@@ -707,15 +727,18 @@ class Capability(ABC):
 ```python
 class Tool(Capability):
     """External-world interaction capability."""
+
     permissions: Literal["safe"]  # tools are always safe (no privileged access)
-    parameters: JsonSchema        # JSON Schema for args validation
-    examples: list[ToolExample]   # few-shot examples for LLM decision
+    parameters: JsonSchema  # JSON Schema for args validation
+    examples: list[ToolExample]  # few-shot examples for LLM decision
 
     @abstractmethod
     async def execute(self, args: dict, context: ExecutionContext) -> ToolResult: ...
 
+
 class ToolRegistry:
     """Auto-discover and register tools."""
+
     def register(self, tool: Tool) -> None: ...
     def unregister(self, name: str) -> None: ...
     def get(self, name: str) -> Tool: ...
@@ -729,13 +752,16 @@ class ToolRegistry:
 ```python
 class Skill(Capability):
     """Privileged system capability."""
+
     permissions: Literal["safe", "privileged"]
 
     @abstractmethod
     async def execute(self, args: dict, context: ExecutionContext) -> SkillResult: ...
 
+
 class SkillRegistry:
     """Register and manage skills."""
+
     def register(self, skill: Skill) -> None: ...
     def get(self, name: str) -> Skill: ...
     def list_all(self) -> list[SkillInfo]: ...
@@ -747,16 +773,19 @@ class SkillRegistry:
 ```python
 class SearchProvider(Capability):
     """Search source capability."""
-    domain: str                        # "web", "video", "code", "paper", "local"
-    platforms: list[str]               # "bing", "bilibili", "github", "arxiv"
-    fallback_providers: list[str]      # alternative provider names
-    rate_limit: RateLimit              # requests per minute
+
+    domain: str  # "web", "video", "code", "paper", "local"
+    platforms: list[str]  # "bing", "bilibili", "github", "arxiv"
+    fallback_providers: list[str]  # alternative provider names
+    rate_limit: RateLimit  # requests per minute
 
     @abstractmethod
     async def search(self, query: str, num_results: int) -> SearchResult: ...
 
+
 class SearchManager:
     """Orchestrate multi-provider search with merge/rank/dedup."""
+
     def register_provider(self, provider: SearchProvider) -> None: ...
     async def search(
         self,
@@ -781,30 +810,75 @@ Decouple pipeline stages. Stages emit typed events. Observability, logging, and 
 ```python
 # Pipeline lifecycle events
 class InputSanitized(PipelineEvent): ...
+
+
 class IntentClassified(PipelineEvent): ...
+
+
 class MemoryRetrieved(PipelineEvent): ...
+
+
 class ConceptsReasoned(PipelineEvent): ...
+
+
 class PlanGenerated(PipelineEvent): ...
+
+
 class ToolExecuted(PipelineEvent): ...
+
+
 class SkillExecuted(PipelineEvent): ...
+
+
 class SearchExecuted(PipelineEvent): ...
+
+
 class PromptBuilt(PipelineEvent): ...
+
+
 class LLMCallStarted(PipelineEvent): ...
+
+
 class LLMChunkReceived(PipelineEvent): ...
+
+
 class LLMCallCompleted(PipelineEvent): ...
+
+
 class ResponseSanitized(PipelineEvent): ...
+
+
 class MemoryWritten(PipelineEvent): ...
+
+
 class ConceptsExtracted(PipelineEvent): ...
+
+
 class StateSaved(PipelineEvent): ...
+
+
 class RouterLearned(PipelineEvent): ...
+
+
 class RAGUpdated(PipelineEvent): ...
+
+
 class EvolutionCycleCompleted(PipelineEvent): ...
+
+
 class HealthCheckCompleted(PipelineEvent): ...
+
 
 # System events
 class AgentInitialized(PipelineEvent): ...
+
+
 class AgentShutdown(PipelineEvent): ...
+
+
 class ErrorOccurred(PipelineEvent): ...
+
+
 class ReentrancyBlocked(PipelineEvent): ...
 ```
 
@@ -822,8 +896,10 @@ class EventBus(Protocol):
     @contextmanager
     def collect(self, *event_types: type[PipelineEvent]) -> AsyncIterator[list[PipelineEvent]]: ...
 
+
 class InMemoryEventBus:
     """Default implementation. Supports async handlers."""
+
     # Internal: dict[type, set[Callable]]
     # emit() calls all handlers for the event's type concurrently
 ```
@@ -845,6 +921,7 @@ Every external integration (LLM, search, file system, HTTP) is behind a Protocol
 ```python
 class LLMClient(Protocol):
     """Abstract LLM API client."""
+
     async def stream(
         self,
         messages: list[Message],
@@ -858,8 +935,10 @@ class LLMClient(Protocol):
         **kwargs,
     ) -> LLMResponse: ...
 
+
 class FileStorage(Protocol):
     """Abstract file system."""
+
     async def read(self, path: str) -> str: ...
     async def write(self, path: str, content: str) -> None: ...
     async def exists(self, path: str) -> bool: ...
@@ -867,13 +946,17 @@ class FileStorage(Protocol):
     async def delete(self, path: str) -> None: ...
     async def mkdir(self, path: str) -> None: ...
 
+
 class HttpClient(Protocol):
     """Abstract HTTP client."""
+
     async def get(self, url: str, **kwargs) -> HttpResponse: ...
     async def post(self, url: str, json: dict, **kwargs) -> HttpResponse: ...
 
+
 class VectorStore(Protocol):
     """Abstract vector store."""
+
     async def build(self, documents: list[Document]) -> None: ...
     async def search(self, query: str, top_k: int) -> list[VectorSearchResult]: ...
     async def apply_feedback(self, doc_path: str, delta: float) -> None: ...
@@ -905,9 +988,9 @@ class AgentConfig(BaseSettings):
     memory_base_path: str = "./agent-memory"
 
     # Evolution
-    evolution_cycle_interval: int = 10       # memory evolution
-    evolution_concept_interval: int = 20     # concept evolution
-    evolution_health_interval: int = 15      # health check
+    evolution_cycle_interval: int = 10  # memory evolution
+    evolution_concept_interval: int = 20  # concept evolution
+    evolution_health_interval: int = 15  # health check
 
     # Safety
     safety_max_update_per_cycle: float = 0.05
@@ -935,9 +1018,18 @@ class AgentConfig(BaseSettings):
 
     # Pipeline
     pipeline_stages: list[str] = [
-        "sanitize", "route", "retrieve", "reason", "plan",
-        "execute", "prompt", "generate", "sanitize_response",
-        "persist", "learn", "health",
+        "sanitize",
+        "route",
+        "retrieve",
+        "reason",
+        "plan",
+        "execute",
+        "prompt",
+        "generate",
+        "sanitize_response",
+        "persist",
+        "learn",
+        "health",
     ]
 
     # Observability
@@ -957,6 +1049,7 @@ class AgentConfig(BaseSettings):
 ```python
 class CognitiveState(BaseModel):
     """Immutable snapshot of the entire cognitive system. Read-only after creation."""
+
     memory: MemoryState
     concepts: ConceptGraphState
     reasoning: ReasoningState
@@ -967,7 +1060,9 @@ class CognitiveState(BaseModel):
 
     def with_memory(self, **updates) -> CognitiveState: ...  # returns new instance
     def with_concepts(self, **updates) -> CognitiveState: ...
+
     # ... (immutable update pattern)
+
 
 class MemoryState(BaseModel):
     episodic_count: int
@@ -992,14 +1087,18 @@ StateMutation = Annotated[
     Field(discriminator="type"),
 ]
 
+
 class MutationQueue:
     """Buffer mutations within a single interaction cycle."""
+
     def add(self, mutation: StateMutation) -> None: ...
     async def flush(self, engine: StateMutationEngine) -> FlushResult: ...
     def new_cycle(self) -> None: ...
 
+
 class StateMutationEngine:
     """Validate, clamp, and apply mutations."""
+
     def validate(self, mutation: StateMutation) -> ValidationResult: ...
     async def apply(self, mutation: StateMutation) -> ApplyResult: ...
     async def apply_batch(self, mutations: list[StateMutation]) -> BatchResult: ...
@@ -1089,14 +1188,14 @@ class MetricsCollector:
 
     # Counters
     interactions_total: Counter
-    tool_executions_total: Counter        # labels: tool_name, status
-    llm_calls_total: Counter              # labels: status
-    errors_total: Counter                 # labels: error_type
+    tool_executions_total: Counter  # labels: tool_name, status
+    llm_calls_total: Counter  # labels: status
+    errors_total: Counter  # labels: error_type
 
     # Histograms
-    pipeline_stage_duration_ms: Histogram # labels: stage_name
+    pipeline_stage_duration_ms: Histogram  # labels: stage_name
     llm_call_duration_ms: Histogram
-    tool_execution_duration_ms: Histogram # labels: tool_name
+    tool_execution_duration_ms: Histogram  # labels: tool_name
     llm_tokens_per_call: Histogram
 
     # Gauges
@@ -1182,18 +1281,20 @@ async def agent_with_mocks():
 class PipelineStage(ABC):
     """A single step in the request processing pipeline."""
 
-    name: str                          # unique stage identifier
-    priority: int                      # execution order (lower = earlier)
+    name: str  # unique stage identifier
+    priority: int  # execution order (lower = earlier)
 
     @abstractmethod
     async def execute(self, context: PipelineContext) -> PipelineContext: ...
 
     # Lifecycle hooks (optional)
-    async def on_startup(self) -> None: ...    # called once at agent init
-    async def on_shutdown(self) -> None: ...   # called once at agent shutdown
+    async def on_startup(self) -> None: ...  # called once at agent init
+    async def on_shutdown(self) -> None: ...  # called once at agent shutdown
+
 
 class PipelineContext(BaseModel, frozen=True):
     """Immutable context carried through the pipeline. Each stage returns a new instance."""
+
     session_id: str
     user_input_raw: str
     user_input_sanitized: str | None = None
@@ -1212,6 +1313,7 @@ class PipelineContext(BaseModel, frozen=True):
     # Immutable update helpers
     def with_sanitized(self, text: str) -> PipelineContext: ...
     def with_router_result(self, result: RouterResult) -> PipelineContext: ...
+
     # ... (one per field)
 ```
 
@@ -1296,6 +1398,7 @@ class Agent:
     def register_search_provider(self, provider: SearchProvider) -> None: ...
     def register_pipeline_stage(self, stage: PipelineStage) -> None: ...
 
+
 class AgentResponse(BaseModel):
     text: str
     tool_calls: list[ToolCallRecord]
@@ -1322,6 +1425,7 @@ class MyNewTool(Tool):
         # implementation
         return ToolResult(success=True, data=...)
 
+
 # 2. Register — zero changes to agent core
 agent.register_tool(MyNewTool())
 ```
@@ -1338,6 +1442,7 @@ class MySearchProvider(SearchProvider):
         # implementation
         return SearchResult(...)
 
+
 agent.register_search_provider(MySearchProvider())
 ```
 
@@ -1350,7 +1455,8 @@ class MyCustomStage(PipelineStage):
 
     async def execute(self, context):
         # modify context
-        return context.with_*(...)
+        return context.with_ * (...)
+
 
 agent.register_pipeline_stage(MyCustomStage())
 ```

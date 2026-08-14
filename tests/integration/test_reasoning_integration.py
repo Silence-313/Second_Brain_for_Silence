@@ -32,16 +32,51 @@ class TestReasoningIntegration:
     @staticmethod
     def _make_test_concepts() -> list[Concept]:
         return [
-            Concept(id="c1", name="Machine Learning", slug="machine-learning", confidence=0.9,
-                    source_episodes=["ep1", "ep2"], related=["deep-learning", "neural-networks"], tags=["ai", "ml"]),
-            Concept(id="c2", name="Deep Learning", slug="deep-learning", confidence=0.85,
-                    source_episodes=["ep2", "ep3"], related=["machine-learning"], tags=["ai", "dl"]),
-            Concept(id="c3", name="Neural Networks", slug="neural-networks", confidence=0.8,
-                    source_episodes=["ep3"], related=["machine-learning"], tags=["ai", "neural"]),
-            Concept(id="c4", name="Python", slug="python", confidence=0.9,
-                    source_episodes=["ep4"], related=[], tags=["code", "language"]),
-            Concept(id="c5", name="Rust", slug="rust", confidence=0.7,
-                    source_episodes=["ep5"], related=[], tags=["code", "systems"]),
+            Concept(
+                id="c1",
+                name="Machine Learning",
+                slug="machine-learning",
+                confidence=0.9,
+                source_episodes=["ep1", "ep2"],
+                related=["deep-learning", "neural-networks"],
+                tags=["ai", "ml"],
+            ),
+            Concept(
+                id="c2",
+                name="Deep Learning",
+                slug="deep-learning",
+                confidence=0.85,
+                source_episodes=["ep2", "ep3"],
+                related=["machine-learning"],
+                tags=["ai", "dl"],
+            ),
+            Concept(
+                id="c3",
+                name="Neural Networks",
+                slug="neural-networks",
+                confidence=0.8,
+                source_episodes=["ep3"],
+                related=["machine-learning"],
+                tags=["ai", "neural"],
+            ),
+            Concept(
+                id="c4",
+                name="Python",
+                slug="python",
+                confidence=0.9,
+                source_episodes=["ep4"],
+                related=[],
+                tags=["code", "language"],
+            ),
+            Concept(
+                id="c5",
+                name="Rust",
+                slug="rust",
+                confidence=0.7,
+                source_episodes=["ep5"],
+                related=[],
+                tags=["code", "systems"],
+            ),
         ]
 
     def test_build_graph_from_concepts(self, reasoning_stack):

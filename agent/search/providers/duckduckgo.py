@@ -28,7 +28,9 @@ class DuckDuckGoSearchProvider(SearchProvider):
         html = resp.text
 
         results: list[SearchResult] = []
-        title_blocks = re.findall(r'class="result__a"[^>]*href="([^"]*)"[^>]*>(.*?)</a>', html, re.DOTALL)
+        title_blocks = re.findall(
+            r'class="result__a"[^>]*href="([^"]*)"[^>]*>(.*?)</a>', html, re.DOTALL
+        )
         snippet_blocks = re.findall(r'class="result__snippet"[^>]*>(.*?)</', html, re.DOTALL)
 
         for i, (href, title_raw) in enumerate(title_blocks[:num_results]):

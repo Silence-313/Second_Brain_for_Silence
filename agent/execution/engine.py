@@ -57,14 +57,10 @@ class ExecutionEngine:
 
         sorted_steps = self._topological_sort(plan.steps)
 
-        if plan.strategy == "parallel" and all(
-            s.parallel_group is not None for s in sorted_steps
-        ):
+        if plan.strategy == "parallel" and all(s.parallel_group is not None for s in sorted_steps):
             groups = self._group_by_parallel(sorted_steps)
             for group_steps in groups:
-                group_results = await self._execute_parallel(
-                    group_steps, results, failures
-                )
+                group_results = await self._execute_parallel(group_steps, results, failures)
                 for step_id, r in group_results.items():
                     if r.success:
                         completed += 1
@@ -116,7 +112,9 @@ class ExecutionEngine:
 
                 action = await self._fallback.on_failure(
                     step.step_id,
-                    Exception(verification.issues[0] if verification.issues else "verification failed"),
+                    Exception(
+                        verification.issues[0] if verification.issues else "verification failed"
+                    ),
                     attempt,
                     [],
                 )
@@ -156,13 +154,14 @@ class ExecutionEngine:
         tasks = []
         for step in steps:
             deps_ok = all(
-                results.get(dep_id, ToolResult(success=True)).success
-                for dep_id in step.depends_on
+                results.get(dep_id, ToolResult(success=True)).success for dep_id in step.depends_on
             )
             if deps_ok:
                 tasks.append(self._execute_step(step))
             else:
-                tasks.append(asyncio.sleep(0, result=ToolResult(success=False, error="dependency failed")))
+                tasks.append(
+                    asyncio.sleep(0, result=ToolResult(success=False, error="dependency failed"))
+                )
 
         step_results = await asyncio.gather(*tasks, return_exceptions=True)
 

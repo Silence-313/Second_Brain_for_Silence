@@ -68,7 +68,7 @@ class TestRoutingIntegration:
             rag.record_retrieval(
                 RetrievalRecord(
                     query=f"query {i}",
-                    retrieved_docs=[f"doc{i}.md", f"doc{i+1}.md"],
+                    retrieved_docs=[f"doc{i}.md", f"doc{i + 1}.md"],
                     used_docs=[f"doc{i}.md"],
                     answer_quality=0.7 + i * 0.05,
                 )

@@ -23,7 +23,11 @@ class UserProfile:
         confidence_scores = dict(self._data.confidence_scores)
         confidence_scores[key] = clamped
         self._data = self._data.model_copy(
-            update={key: value, "confidence_scores": confidence_scores, "last_updated": datetime.now()}
+            update={
+                key: value,
+                "confidence_scores": confidence_scores,
+                "last_updated": datetime.now(),
+            }
         )
         return True
 
@@ -34,9 +38,7 @@ class UserProfile:
         if value in current:
             return True
         new_list = [*current, value]
-        self._data = self._data.model_copy(
-            update={field: new_list, "last_updated": datetime.now()}
-        )
+        self._data = self._data.model_copy(update={field: new_list, "last_updated": datetime.now()})
         return True
 
     def remove_from_array(self, field: str, value: str) -> bool:
@@ -46,9 +48,7 @@ class UserProfile:
         if value not in current:
             return False
         new_list = [v for v in current if v != value]
-        self._data = self._data.model_copy(
-            update={field: new_list, "last_updated": datetime.now()}
-        )
+        self._data = self._data.model_copy(update={field: new_list, "last_updated": datetime.now()})
         return True
 
     def format_for_context(self) -> str:

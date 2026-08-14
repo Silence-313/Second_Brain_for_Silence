@@ -60,7 +60,9 @@ class ReadKBFileTool(Tool):
         path = args["path"]
         try:
             content = await self._kb.read_file(path)
-            return ToolResult(success=True, data={"path": path, "content": content, "size_chars": len(content)})
+            return ToolResult(
+                success=True, data={"path": path, "content": content, "size_chars": len(content)}
+            )
         except Exception as e:
             return ToolResult(success=False, error=str(e))
 
@@ -177,7 +179,9 @@ class GetKBOverviewTool(Tool):
 
 class MaintainKBTool(Tool):
     name = "kb_maintain"
-    description = "触发知识库维护：消化对话记录，更新用户画像。调用此工具后 Agent 会重新整理知识库。"
+    description = (
+        "触发知识库维护：消化对话记录，更新用户画像。调用此工具后 Agent 会重新整理知识库。"
+    )
     permissions = "safe"
     parameters = {}
 
@@ -191,20 +195,27 @@ class MaintainKBTool(Tool):
 
         chat_log = await self._kb.read_chat_log()
         if len(chat_log) < 200:
-            return ToolResult(success=True, data={"digested": False, "reason": "对话记录不足，跳过维护"})
+            return ToolResult(
+                success=True, data={"digested": False, "reason": "对话记录不足，跳过维护"}
+            )
 
         if self._llm is None:
             await self._kb.clear_chat_log()
-            return ToolResult(success=True, data={
-                "digested": False,
-                "reason": "LLM 未配置，已清空对话记录",
-            })
+            return ToolResult(
+                success=True,
+                data={
+                    "digested": False,
+                    "reason": "LLM 未配置，已清空对话记录",
+                },
+            )
 
         try:
             concepts, relationships, summary = await self._extract_with_llm(chat_log)
             if not concepts:
                 await self._kb.clear_chat_log()
-                return ToolResult(success=True, data={"digested": False, "reason": "未提取到有价值的概念"})
+                return ToolResult(
+                    success=True, data={"digested": False, "reason": "未提取到有价值的概念"}
+                )
 
             written_concepts = []
             for c in concepts:
@@ -244,22 +255,29 @@ class MaintainKBTool(Tool):
 
             await self._kb.clear_chat_log()
 
-            return ToolResult(success=True, data={
-                "digested": True,
-                "chat_log_size": len(chat_log),
-                "concepts_written": len(written_concepts),
-                "concepts": written_concepts,
-                "message": f"已从对话中提取 {len(written_concepts)} 个概念。",
-            })
+            return ToolResult(
+                success=True,
+                data={
+                    "digested": True,
+                    "chat_log_size": len(chat_log),
+                    "concepts_written": len(written_concepts),
+                    "concepts": written_concepts,
+                    "message": f"已从对话中提取 {len(written_concepts)} 个概念。",
+                },
+            )
         except Exception as e:
             return ToolResult(success=False, error=f"维护失败: {e}")
 
-    async def _extract_with_llm(self, chat_log: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
+    async def _extract_with_llm(
+        self, chat_log: str
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
         import json as _json
 
         existing_concepts = await self._kb.list_concepts()
         existing_names = [c.replace(".md", "") for c in existing_concepts]
-        existing_info = "\n".join(f"- {n}" for n in existing_names) if existing_names else "（无现有概念）"
+        existing_info = (
+            "\n".join(f"- {n}" for n in existing_names) if existing_names else "（无现有概念）"
+        )
 
         system_prompt = f"""你是知识库维护者。阅读对话记录，提取值得长期保留的知识。
 
@@ -300,6 +318,7 @@ class MaintainKBTool(Tool):
             return
 
         import json as _json
+
         concept_files = await self._kb.list_concepts()
         if len(concept_files) < 2:
             return
@@ -311,6 +330,7 @@ class MaintainKBTool(Tool):
                 raw = await self._kb.read_concept(slug)
                 fm, body = raw.split("---\n", 2)[1:] if "---" in raw else ({}, raw)
                 import yaml
+
                 fm = yaml.safe_load(fm) or {}
                 name = fm.get("name", slug) if isinstance(fm, dict) else slug
                 tags = fm.get("tags", []) if isinstance(fm, dict) else []
@@ -331,7 +351,8 @@ class MaintainKBTool(Tool):
         try:
             result = await self._llm.complete(
                 [{"role": "user", "content": prompt}],
-                temperature=0.2, max_tokens=1024,
+                temperature=0.2,
+                max_tokens=1024,
             )
             text = result.get("content", "")
             start = text.find("{")

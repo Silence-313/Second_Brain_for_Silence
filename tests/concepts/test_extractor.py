@@ -6,7 +6,9 @@ from agent.concepts.extractor import ConceptExtractor
 class TestConceptExtractor:
     def test_extract_from_headings(self) -> None:
         ce = ConceptExtractor()
-        content = "## Machine Learning\n\nSome text about ML.\n\n### Deep Learning\n\nMore about DL."
+        content = (
+            "## Machine Learning\n\nSome text about ML.\n\n### Deep Learning\n\nMore about DL."
+        )
         concepts = ce.extract(content)
         names = [c.name for c in concepts]
         assert "Machine Learning" in names

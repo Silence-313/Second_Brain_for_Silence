@@ -173,7 +173,10 @@ class Agent:
         # Knowledge Base (llm-wiki)
         if self._config.knowledge_base_enabled:
             from agent.knowledge.manager import KnowledgeBaseManager
-            self._knowledge_base = KnowledgeBaseManager(self._storage, self._config.knowledge_base_path)
+
+            self._knowledge_base = KnowledgeBaseManager(
+                self._storage, self._config.knowledge_base_path
+            )
             await self._knowledge_base.initialize()
 
         # Reasoning (Stage 3)
@@ -201,13 +204,24 @@ class Agent:
         self._tool_registry.register(AddTodosTool())
         self._tool_registry.register(TodoStatsTool())
         from agent.infrastructure.http.httpx_client import HttpxHttpClient
+
         _http = HttpxHttpClient()
         self._tool_registry.register(WebSearchTool(http_client=_http))
-        self._tool_registry.register(ListWikiTool(storage=self._storage, base_path=self._config.memory_base_path))
-        self._tool_registry.register(ReadWikiTool(storage=self._storage, base_path=self._config.memory_base_path))
-        self._tool_registry.register(WriteWikiTool(storage=self._storage, base_path=self._config.memory_base_path))
-        self._tool_registry.register(DeleteWikiTool(storage=self._storage, base_path=self._config.memory_base_path))
-        self._tool_registry.register(SearchWikiTool(storage=self._storage, base_path=self._config.memory_base_path))
+        self._tool_registry.register(
+            ListWikiTool(storage=self._storage, base_path=self._config.memory_base_path)
+        )
+        self._tool_registry.register(
+            ReadWikiTool(storage=self._storage, base_path=self._config.memory_base_path)
+        )
+        self._tool_registry.register(
+            WriteWikiTool(storage=self._storage, base_path=self._config.memory_base_path)
+        )
+        self._tool_registry.register(
+            DeleteWikiTool(storage=self._storage, base_path=self._config.memory_base_path)
+        )
+        self._tool_registry.register(
+            SearchWikiTool(storage=self._storage, base_path=self._config.memory_base_path)
+        )
 
         # Knowledge Base Tools
         if self._knowledge_base is not None:
@@ -222,6 +236,7 @@ class Agent:
                 WriteKBConceptTool,
                 WriteKBSummaryTool,
             )
+
             self._tool_registry.register(ListKBSummariesTool(kb_manager=self._knowledge_base))
             self._tool_registry.register(ListKBConceptsTool(kb_manager=self._knowledge_base))
             self._tool_registry.register(ReadKBFileTool(kb_manager=self._knowledge_base))
@@ -230,7 +245,9 @@ class Agent:
             self._tool_registry.register(WriteKBConceptTool(kb_manager=self._knowledge_base))
             self._tool_registry.register(GetKBIndexTool(kb_manager=self._knowledge_base))
             self._tool_registry.register(GetKBOverviewTool(kb_manager=self._knowledge_base))
-            self._tool_registry.register(MaintainKBTool(kb_manager=self._knowledge_base, llm_client=self._llm))
+            self._tool_registry.register(
+                MaintainKBTool(kb_manager=self._knowledge_base, llm_client=self._llm)
+            )
 
         self._tool_decision = ToolDecisionPolicy(llm_client=self._llm)
 
@@ -243,6 +260,7 @@ class Agent:
         from agent.search.providers.bing import BingSearchProvider
         from agent.search.providers.duckduckgo import DuckDuckGoSearchProvider
         from agent.search.providers.sogou import SogouSearchProvider
+
         self._search_manager = SearchManager()
         self._search_manager.register_provider(BingSearchProvider(http_client=_http))
         self._search_manager.register_provider(DuckDuckGoSearchProvider(http_client=_http))
@@ -276,12 +294,22 @@ class Agent:
                 reasoner=self._reasoner,
                 store=self._memory_store,
             ),
-            PlanStage(planner=self._planner, tool_registry=self._tool_registry, search_manager=self._search_manager),
+            PlanStage(
+                planner=self._planner,
+                tool_registry=self._tool_registry,
+                search_manager=self._search_manager,
+            ),
             ExecuteStage(engine=self._execution_engine),
-            PromptStage(max_chars=self._config.safety_max_prompt_chars, kb_manager=self._knowledge_base),
+            PromptStage(
+                max_chars=self._config.safety_max_prompt_chars, kb_manager=self._knowledge_base
+            ),
             GenerateStage(llm_client=self._llm),
             ResponseSanitizeStage(),
-            PersistStage(memory_writer=self._memory_writer, profile=self._profile, kb_manager=self._knowledge_base),
+            PersistStage(
+                memory_writer=self._memory_writer,
+                profile=self._profile,
+                kb_manager=self._knowledge_base,
+            ),
             LearnStage(
                 router_telemetry=self._router_telemetry,
                 rag_feedback=self._rag_feedback,
@@ -300,9 +328,7 @@ class Agent:
         self._pipeline = Pipeline(stages)
 
         # Observability
-        self._health = HealthCheck(
-            version="0.1.0-dev", model=self._config.llm_model
-        )
+        self._health = HealthCheck(version="0.1.0-dev", model=self._config.llm_model)
         self._metrics = MetricsCollector()
         self._tracer = ExecutionTracer()
 
@@ -313,9 +339,7 @@ class Agent:
         if self._episodic:
             try:
                 data = self._episodic.serialize()
-                await self._storage.write(
-                    f"{self._config.memory_base_path}/episodic.json", data
-                )
+                await self._storage.write(f"{self._config.memory_base_path}/episodic.json", data)
             except Exception:
                 pass
 
@@ -346,6 +370,7 @@ class Agent:
         try:
             if not session_id:
                 import uuid
+
                 session_id = uuid.uuid4().hex[:12]
 
             context = PipelineContext(
@@ -397,22 +422,14 @@ class Agent:
             return HealthReport(status="error", errors=["agent not initialized"])
 
         episodic_count = self._episodic.count if self._episodic else 0
-        concept_count = len(
-            await self._memory_store.load_concepts()
-        ) if self._memory_store else 0
+        concept_count = len(await self._memory_store.load_concepts()) if self._memory_store else 0
 
         health_score = 1.0
         if self._drift_controller:
             try:
-                concepts = (
-                    await self._memory_store.load_concepts()
-                    if self._memory_store
-                    else []
-                )
+                concepts = await self._memory_store.load_concepts() if self._memory_store else []
                 confidences = [c.confidence for c in concepts]
-                metrics = self._drift_controller.compute_health(
-                    confidences, len(concepts)
-                )
+                metrics = self._drift_controller.compute_health(confidences, len(concepts))
                 health_score = metrics.health_score
             except Exception:
                 pass
@@ -430,9 +447,7 @@ class Agent:
             "episodic_count": self._episodic.count if self._episodic else 0,
             "tool_count": self._tool_registry.count if self._tool_registry else 0,
             "skill_count": (
-                len(self._skill_registry.get_skill_names())
-                if self._skill_registry
-                else 0
+                len(self._skill_registry.get_skill_names()) if self._skill_registry else 0
             ),
         }
 
@@ -451,10 +466,7 @@ class Agent:
             return
         try:
             episodes = await self._memory_store.load_episodes()
-            docs = [
-                {"path": e.id, "content": f"{e.summary} {e.detail}"}
-                for e in episodes
-            ]
+            docs = [{"path": e.id, "content": f"{e.summary} {e.detail}"} for e in episodes]
             self._vector.build(docs)
         except Exception:
             pass
@@ -462,9 +474,7 @@ class Agent:
     async def save_state(self) -> None:
         if self._episodic:
             data = self._episodic.serialize()
-            await self._storage.write(
-                f"{self._config.memory_base_path}/episodic.json", data
-            )
+            await self._storage.write(f"{self._config.memory_base_path}/episodic.json", data)
 
     # -- Plugin --
 

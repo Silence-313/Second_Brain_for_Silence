@@ -53,6 +53,7 @@ class TestPipeline:
         ctx = PipelineContext(session_id="s1", user_input_raw="hello")
 
         import asyncio
+
         result = asyncio.run(pipeline.execute(ctx))
         assert result.user_input_sanitized == "processed"
 
@@ -61,6 +62,7 @@ class TestPipeline:
         ctx = PipelineContext(session_id="s1", user_input_raw="hello")
 
         import asyncio
+
         result = asyncio.run(pipeline.execute(ctx))
         assert len(result.errors) == 1
         assert result.errors[0].stage == "failing_stage"
@@ -69,11 +71,14 @@ class TestPipeline:
         class StageA(PipelineStage):
             name = "a"
             priority = 10
+
             async def execute(self, context: PipelineContext) -> PipelineContext:
                 return context
+
         class StageB(PipelineStage):
             name = "b"
             priority = 5
+
             async def execute(self, context: PipelineContext) -> PipelineContext:
                 return context
 
@@ -100,6 +105,7 @@ class TestSanitizeStage:
         stage = SanitizeStage()
         ctx = PipelineContext(session_id="s1", user_input_raw="hello ```code``` world")
         import asyncio
+
         result = asyncio.run(stage.execute(ctx))
         assert "[code removed]" in (result.user_input_sanitized or "")
 
@@ -107,5 +113,6 @@ class TestSanitizeStage:
         stage = SanitizeStage(max_chars=10)
         ctx = PipelineContext(session_id="s1", user_input_raw="a" * 50)
         import asyncio
+
         result = asyncio.run(stage.execute(ctx))
         assert len(result.user_input_sanitized or "") <= 10

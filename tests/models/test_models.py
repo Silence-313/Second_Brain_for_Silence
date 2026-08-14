@@ -1,6 +1,5 @@
 """Tests for all Stage 1 Pydantic data models."""
 
-
 import pytest
 
 from agent.models.concepts import (
@@ -52,6 +51,7 @@ from agent.models.tools import ToolCallRecord, ToolResult
 
 # ── Memory models ──
 
+
 class TestWorkingMemoryEntry:
     def test_create(self) -> None:
         e = WorkingMemoryEntry(role="user", content="hello")
@@ -74,7 +74,9 @@ class TestEpisode:
         assert not ep.marked_for_removal
 
     def test_serialize_roundtrip(self) -> None:
-        ep = Episode(id="ep-1", type="goal", summary="learn python", importance=0.8, tags=["code", "python"])
+        ep = Episode(
+            id="ep-1", type="goal", summary="learn python", importance=0.8, tags=["code", "python"]
+        )
         j = ep.model_dump_json()
         ep2 = Episode.model_validate_json(j)
         assert ep2.id == "ep-1"
@@ -96,7 +98,9 @@ class TestUserProfileData:
         assert p.response_style == "concise"
 
     def test_with_data(self) -> None:
-        p = UserProfileData(name="Alice", role="engineer", interests=["coding", "ai"], expertise=["python"])
+        p = UserProfileData(
+            name="Alice", role="engineer", interests=["coding", "ai"], expertise=["python"]
+        )
         assert len(p.interests) == 2
         assert len(p.expertise) == 1
 
@@ -122,6 +126,7 @@ class TestMemoryWriteDecision:
 
 # ── Concepts models ──
 
+
 class TestConcept:
     def test_create(self) -> None:
         c = Concept(id="c1", name="Machine Learning", slug="machine-learning")
@@ -131,7 +136,9 @@ class TestConcept:
 
 class TestExtractedConcept:
     def test_create(self) -> None:
-        ec = ExtractedConcept(name="ML", slug="ml", confidence=0.6, source_terms=["machine", "learning"])
+        ec = ExtractedConcept(
+            name="ML", slug="ml", confidence=0.6, source_terms=["machine", "learning"]
+        )
         assert ec.confidence == 0.6
         assert len(ec.source_terms) == 2
 
@@ -154,6 +161,7 @@ class TestConceptGraph:
 
 
 # ── State models ──
+
 
 class TestCognitiveState:
     def test_default(self) -> None:
@@ -183,6 +191,7 @@ class TestPolicyState:
 
 # ── Routing models ──
 
+
 class TestRouterResult:
     def test_create(self) -> None:
         r = RouterResult(tool="web_search", confidence=0.8, reason="test")
@@ -205,6 +214,7 @@ class TestToolMetrics:
 
 # ── Reasoning models ──
 
+
 class TestReasoningResult:
     def test_create_defaults(self) -> None:
         r = ReasoningResult()
@@ -212,7 +222,9 @@ class TestReasoningResult:
         assert r.confidence == 0.5
 
     def test_with_data(self) -> None:
-        r = ReasoningResult(key_concepts=["ML", "DL"], confidence=0.8, inferred_insights=["ML is related to DL"])
+        r = ReasoningResult(
+            key_concepts=["ML", "DL"], confidence=0.8, inferred_insights=["ML is related to DL"]
+        )
         assert len(r.key_concepts) == 2
 
 
@@ -224,6 +236,7 @@ class TestReasoningTrace:
 
 
 # ── Evolution models ──
+
 
 class TestScoredMemory:
     def test_create(self) -> None:
@@ -253,6 +266,7 @@ class TestEvolutionResult:
 
 # ── Policy models ──
 
+
 class TestCognitivePolicy:
     def test_default(self) -> None:
         cp = CognitivePolicy()
@@ -274,6 +288,7 @@ class TestDriftMetrics:
 
 
 # ── Mutation models ──
+
 
 class TestStateMutation:
     def test_concept_update(self) -> None:
@@ -327,6 +342,7 @@ class TestStateMutation:
 
 # ── Retrieval models ──
 
+
 class TestVectorSearchResult:
     def test_create(self) -> None:
         r = VectorSearchResult(content="test", source_path="/doc.md", score=0.8)
@@ -348,6 +364,7 @@ class TestDocumentWeight:
 
 # ── Search models ──
 
+
 class TestSearchResult:
     def test_create(self) -> None:
         sr = SearchResult(title="Test", url="https://example.com", snippet="desc")
@@ -361,6 +378,7 @@ class TestMergedSearchResult:
 
 
 # ── Tools/Skills models ──
+
 
 class TestToolResult:
     def test_success(self) -> None:
@@ -393,6 +411,7 @@ class TestSkillExecutionRecord:
 
 
 # ── Event models ──
+
 
 class TestPipelineEvents:
     def test_input_sanitized(self) -> None:

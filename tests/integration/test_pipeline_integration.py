@@ -1,6 +1,5 @@
 """Integration tests: Pipeline — multiple stages working together."""
 
-
 import pytest
 
 from agent.infrastructure.llm.mock import MockLLMClient

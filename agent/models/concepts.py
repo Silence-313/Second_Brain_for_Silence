@@ -52,5 +52,3 @@ class ConceptSubgraph(BaseModel, frozen=True):
     nodes: dict[str, ConceptGraphNode] = Field(default_factory=dict)
     edges: list[ConceptGraphEdge] = Field(default_factory=list)
     central_concepts: list[str] = Field(default_factory=list)
-
-

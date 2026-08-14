@@ -1,6 +1,5 @@
 """Tests for evolution scoring functions."""
 
-
 from agent.evolution.scoring import (
     apply_batch_decay,
     compute_decay_score,

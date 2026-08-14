@@ -23,6 +23,8 @@ class HttpClient(Protocol):
         """HTTP GET request."""
         ...
 
-    async def post(self, url: str, json: dict[str, Any] | None = None, **kwargs: Any) -> HttpResponse:
+    async def post(
+        self, url: str, json: dict[str, Any] | None = None, **kwargs: Any
+    ) -> HttpResponse:
         """HTTP POST request with JSON body."""
         ...

@@ -10,15 +10,34 @@ _HEADING_RE = re.compile(r"^(#{1,3})\s+(.+)$", re.MULTILINE)
 _ENGLISH_TERM_RE = re.compile(r"\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b|[a-z]+_[a-z]+|[a-z]+-[a-z]+")
 _ENGLISH_PHRASE_RE = re.compile(r"\b[A-Za-z]{3,}\s+[A-Za-z]{3,}\b")
 
-_NOISE_TRIGRAM = re.compile(
-    r"(^[的是在了和就])|([的了着过]$)|(^[不太也没很都])|(^[这可那哪怎])"
-)
+_NOISE_TRIGRAM = re.compile(r"(^[的是在了和就])|([的了着过]$)|(^[不太也没很都])|(^[这可那哪怎])")
 
 _STRUCTURAL_LABELS = {
-    "引言", "背景", "方法", "结果", "讨论", "结论", "总结", "摘要",
-    "介绍", "概述", "分析", "建议", "附录", "参考文献", "致谢",
-    "introduction", "background", "methods", "results", "discussion",
-    "conclusion", "summary", "abstract", "appendix", "references",
+    "引言",
+    "背景",
+    "方法",
+    "结果",
+    "讨论",
+    "结论",
+    "总结",
+    "摘要",
+    "介绍",
+    "概述",
+    "分析",
+    "建议",
+    "附录",
+    "参考文献",
+    "致谢",
+    "introduction",
+    "background",
+    "methods",
+    "results",
+    "discussion",
+    "conclusion",
+    "summary",
+    "abstract",
+    "appendix",
+    "references",
 }
 
 
@@ -40,23 +59,128 @@ class ConceptExtractor:
     def __init__(self, custom_stop_words: list[str] | None = None) -> None:
         self._stop_words: set[str] = set(custom_stop_words or [])
         self._stop_words |= {
-            "the", "a", "an", "is", "are", "was", "were", "be", "been",
-            "being", "have", "has", "had", "do", "does", "did", "will",
-            "would", "could", "should", "may", "might", "can", "shall",
-            "to", "of", "in", "for", "on", "with", "at", "by", "from",
-            "as", "into", "through", "during", "before", "after",
-            "above", "below", "between", "under", "again", "further",
-            "then", "once", "here", "there", "when", "where", "why",
-            "how", "all", "both", "each", "few", "more", "most",
-            "other", "some", "such", "no", "nor", "not", "only",
-            "own", "same", "so", "than", "too", "very",
-            "的", "了", "在", "是", "我", "有", "和", "就",
-            "不", "人", "都", "一", "一个", "上", "也", "很",
-            "到", "说", "要", "去", "你", "会", "着", "没有",
-            "看", "好", "自己", "这", "他", "她", "它", "们",
-            "那", "什么", "怎么", "哪", "为什么", "可以",
-            "这个", "那个", "这些", "那些", "因为", "所以",
-            "但是", "而且", "或者", "如果", "虽然", "然后",
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "shall",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "into",
+            "through",
+            "during",
+            "before",
+            "after",
+            "above",
+            "below",
+            "between",
+            "under",
+            "again",
+            "further",
+            "then",
+            "once",
+            "here",
+            "there",
+            "when",
+            "where",
+            "why",
+            "how",
+            "all",
+            "both",
+            "each",
+            "few",
+            "more",
+            "most",
+            "other",
+            "some",
+            "such",
+            "no",
+            "nor",
+            "not",
+            "only",
+            "own",
+            "same",
+            "so",
+            "than",
+            "too",
+            "very",
+            "的",
+            "了",
+            "在",
+            "是",
+            "我",
+            "有",
+            "和",
+            "就",
+            "不",
+            "人",
+            "都",
+            "一",
+            "一个",
+            "上",
+            "也",
+            "很",
+            "到",
+            "说",
+            "要",
+            "去",
+            "你",
+            "会",
+            "着",
+            "没有",
+            "看",
+            "好",
+            "自己",
+            "这",
+            "他",
+            "她",
+            "它",
+            "们",
+            "那",
+            "什么",
+            "怎么",
+            "哪",
+            "为什么",
+            "可以",
+            "这个",
+            "那个",
+            "这些",
+            "那些",
+            "因为",
+            "所以",
+            "但是",
+            "而且",
+            "或者",
+            "如果",
+            "虽然",
+            "然后",
         }
 
     def extract(
@@ -75,9 +199,7 @@ class ConceptExtractor:
         results = self._deduplicate(results)
         return results[:6]
 
-    def _extract_from_headings(
-        self, content: str, candidates: dict[str, ExtractedConcept]
-    ) -> None:
+    def _extract_from_headings(self, content: str, candidates: dict[str, ExtractedConcept]) -> None:
         for m in _HEADING_RE.finditer(content):
             text = m.group(2).strip()
             if not text or len(text) > 80:
@@ -92,9 +214,7 @@ class ConceptExtractor:
             else:
                 self._upsert(candidates, slug, name, 0.35, text)
 
-    def _extract_from_bigrams(
-        self, content: str, candidates: dict[str, ExtractedConcept]
-    ) -> None:
+    def _extract_from_bigrams(self, content: str, candidates: dict[str, ExtractedConcept]) -> None:
         cjk_only = "".join(_CJK_RE.findall(content))
         if len(cjk_only) < 4:
             return
@@ -116,9 +236,7 @@ class ConceptExtractor:
             slug = _slugify(bg)
             self._upsert(candidates, slug, bg, score, bg)
 
-    def _extract_from_trigrams(
-        self, content: str, candidates: dict[str, ExtractedConcept]
-    ) -> None:
+    def _extract_from_trigrams(self, content: str, candidates: dict[str, ExtractedConcept]) -> None:
         cjk_only = "".join(_CJK_RE.findall(content))
         if len(cjk_only) < 6:
             return
@@ -171,15 +289,11 @@ class ConceptExtractor:
                     source_terms=concept.source_terms,
                 )
 
-    def _rank_and_filter(
-        self, candidates: dict[str, ExtractedConcept]
-    ) -> list[ExtractedConcept]:
+    def _rank_and_filter(self, candidates: dict[str, ExtractedConcept]) -> list[ExtractedConcept]:
         filtered = [c for c in candidates.values() if c.confidence >= 0.25]
         return sorted(filtered, key=lambda c: c.confidence, reverse=True)
 
-    def _deduplicate(
-        self, concepts: list[ExtractedConcept]
-    ) -> list[ExtractedConcept]:
+    def _deduplicate(self, concepts: list[ExtractedConcept]) -> list[ExtractedConcept]:
         result: list[ExtractedConcept] = []
         for c in concepts:
             is_dup = False

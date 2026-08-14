@@ -11,14 +11,76 @@ _CJK_RE = re.compile(r"[一-鿿㐀-䶿]")
 _TOKEN_RE = re.compile(r"[a-zA-Z]{3,}|[a-zA-Z]+_[a-zA-Z]+|[0-9]+")
 
 _STOP_WORDS: set[str] = {
-    "the", "a", "an", "is", "are", "was", "were", "be", "been",
-    "to", "of", "in", "for", "on", "with", "at", "by", "from",
-    "as", "and", "or", "not", "but", "if", "then", "else",
-    "when", "where", "how", "what", "which", "who", "whom",
-    "this", "that", "these", "those", "it", "its", "he", "she",
-    "的", "了", "在", "是", "我", "有", "和", "就", "不", "人",
-    "都", "一", "上", "也", "很", "到", "说", "要", "去", "你",
-    "会", "着", "没有", "看", "好", "自己", "这", "那", "什么",
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "to",
+    "of",
+    "in",
+    "for",
+    "on",
+    "with",
+    "at",
+    "by",
+    "from",
+    "as",
+    "and",
+    "or",
+    "not",
+    "but",
+    "if",
+    "then",
+    "else",
+    "when",
+    "where",
+    "how",
+    "what",
+    "which",
+    "who",
+    "whom",
+    "this",
+    "that",
+    "these",
+    "those",
+    "it",
+    "its",
+    "he",
+    "she",
+    "的",
+    "了",
+    "在",
+    "是",
+    "我",
+    "有",
+    "和",
+    "就",
+    "不",
+    "人",
+    "都",
+    "一",
+    "上",
+    "也",
+    "很",
+    "到",
+    "说",
+    "要",
+    "去",
+    "你",
+    "会",
+    "着",
+    "没有",
+    "看",
+    "好",
+    "自己",
+    "这",
+    "那",
+    "什么",
 }
 
 
@@ -47,17 +109,12 @@ class TfidfVectorStore:
         self._vocabulary = {term: i for i, term in enumerate(sorted_terms)}
 
         n = len(documents)
-        self._idf = [
-            math.log(n / (1 + doc_freq[term])) for term in sorted_terms
-        ]
+        self._idf = [math.log(n / (1 + doc_freq[term])) for term in sorted_terms]
 
         self._doc_vectors = []
         for tokens in tokenized:
             tf = Counter(tokens)
-            vector = [
-                tf.get(term, 0) * self._idf[i]
-                for i, term in enumerate(sorted_terms)
-            ]
+            vector = [tf.get(term, 0) * self._idf[i] for i, term in enumerate(sorted_terms)]
             self._doc_vectors.append(vector)
 
     async def search(self, query: str, top_k: int = 3) -> list[VectorSearchResult]:
@@ -67,8 +124,7 @@ class TfidfVectorStore:
         query_tokens = self._tokenize(query)
         query_tf = Counter(query_tokens)
         query_vector = [
-            query_tf.get(term, 0) * self._idf[i]
-            for i, term in enumerate(self._vocabulary)
+            query_tf.get(term, 0) * self._idf[i] for i, term in enumerate(self._vocabulary)
         ]
 
         scored: list[tuple[int, float]] = []
@@ -146,8 +202,7 @@ class TfidfVectorStore:
                     tokens = self._tokenize(doc["content"])
                     tf = Counter(tokens)
                     vec = [
-                        tf.get(term, 0) * self._idf[i]
-                        for i, term in enumerate(self._vocabulary)
+                        tf.get(term, 0) * self._idf[i] for i, term in enumerate(self._vocabulary)
                     ]
                     self._doc_vectors.append(vec)
         except (json.JSONDecodeError, KeyError):

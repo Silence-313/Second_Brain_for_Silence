@@ -10,7 +10,9 @@ class PlanStage(PipelineStage):
     name = "plan"
     priority = 5
 
-    def __init__(self, planner: Any = None, tool_registry: Any = None, search_manager: Any = None) -> None:  # Planner | None
+    def __init__(
+        self, planner: Any = None, tool_registry: Any = None, search_manager: Any = None
+    ) -> None:  # Planner | None
         self._planner = planner
         self._tools = tool_registry
         self._search = search_manager

@@ -6,7 +6,20 @@ from typing import Any
 from agent.models.skills import SkillResult
 from agent.skills.protocol import Skill
 
-_SAFE_EXTENSIONS = {".md", ".txt", ".json", ".yaml", ".yml", ".csv", ".log", ".py", ".js", ".ts", ".html", ".css"}
+_SAFE_EXTENSIONS = {
+    ".md",
+    ".txt",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".csv",
+    ".log",
+    ".py",
+    ".js",
+    ".ts",
+    ".html",
+    ".css",
+}
 _MAX_SIZE = 500 * 1024  # 500KB
 _BLOCKED_PATHS = {"/etc", "/proc", "/sys", "/dev", "C:\\Windows", "C:\\Windows\\System32"}
 

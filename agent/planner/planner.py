@@ -40,9 +40,7 @@ class Planner:
         strategy: Literal["sequential", "parallel", "mixed"] = "sequential"
 
         if intent.action == "search":
-            steps, strategy = self._build_search_plan(
-                intent, available_providers or []
-            )
+            steps, strategy = self._build_search_plan(intent, available_providers or [])
         elif intent.action == "read":
             steps = self._build_read_plan(intent, available_tools or [])
         elif intent.action == "write":
@@ -69,12 +67,15 @@ class Planner:
         matching = [
             p
             for p in providers
-            if intent.platform in (p.get("platforms") or [])
-            or p.get("domain") == intent.domain
+            if intent.platform in (p.get("platforms") or []) or p.get("domain") == intent.domain
         ]
         if not matching:
             # Fallback: try any provider whose domain or platforms include "web"
-            matching = [p for p in providers if "web" in (p.get("platforms") or []) or p.get("domain") == "web"]
+            matching = [
+                p
+                for p in providers
+                if "web" in (p.get("platforms") or []) or p.get("domain") == "web"
+            ]
         if not matching:
             return [], "sequential"
 
@@ -105,9 +106,7 @@ class Planner:
         ]
         return steps, "parallel" if len(steps) > 1 else "sequential"
 
-    def _build_read_plan(
-        self, intent: Intent, tools: list[dict[str, Any]]
-    ) -> list[PlanStep]:
+    def _build_read_plan(self, intent: Intent, tools: list[dict[str, Any]]) -> list[PlanStep]:
         tool_names = [t.get("name", "") for t in tools]
 
         if "read_wiki_file" in tool_names and intent.platform == "obsidian":
@@ -130,9 +129,7 @@ class Planner:
             ]
         return []
 
-    def _build_write_plan(
-        self, intent: Intent, tools: list[dict[str, Any]]
-    ) -> list[PlanStep]:
+    def _build_write_plan(self, intent: Intent, tools: list[dict[str, Any]]) -> list[PlanStep]:
         tool_names = [t.get("name", "") for t in tools]
 
         if "write_wiki_file" in tool_names and intent.domain == "code":

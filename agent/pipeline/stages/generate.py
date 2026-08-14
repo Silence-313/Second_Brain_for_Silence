@@ -33,11 +33,13 @@ class GenerateStage(PipelineStage):
             messages.append({"role": "system", "content": system_prompt})
 
         history = context.chat_history or []
-        for h in history[-self._max_history * 2:]:
+        for h in history[-self._max_history * 2 :]:
             role = h.get("role", "user")
             content = h.get("text") or h.get("content", "")
             if content.strip():
-                messages.append({"role": role if role in ("user", "assistant") else "user", "content": content})
+                messages.append(
+                    {"role": role if role in ("user", "assistant") else "user", "content": content}
+                )
 
         messages.append({"role": "user", "content": user_text})
 

@@ -81,9 +81,7 @@ class PromptStage(PipelineStage):
             lines = ["## 概念推理上下文"]
             lines.append(f"关键概念: {', '.join(reasoning.key_concepts[:8])}")
             if hasattr(reasoning, "inferred_insights") and reasoning.inferred_insights:
-                lines.append(
-                    "推理洞察: " + "; ".join(reasoning.inferred_insights[:3])
-                )
+                lines.append("推理洞察: " + "; ".join(reasoning.inferred_insights[:3]))
             sections.append("\n".join(lines))
 
         # Execution results
@@ -102,7 +100,7 @@ class PromptStage(PipelineStage):
                             title = sr.get("title", "") if isinstance(sr, dict) else ""
                             url = sr.get("url", "") if isinstance(sr, dict) else ""
                             snippet = sr.get("snippet", "") if isinstance(sr, dict) else ""
-                            lines.append(f"  {i+1}. {title}")
+                            lines.append(f"  {i + 1}. {title}")
                             if url:
                                 lines.append(f"     URL: {url}")
                             if snippet:

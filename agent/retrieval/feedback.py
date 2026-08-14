@@ -53,12 +53,10 @@ class RagFeedback:
     def serialize(self) -> str:
         data: dict[str, Any] = {
             "doc_weights": {
-                path: w.model_dump(mode="json")
-                for path, w in self._doc_weights.items()
+                path: w.model_dump(mode="json") for path, w in self._doc_weights.items()
             },
             "query_clusters": {
-                sig: c.model_dump(mode="json")
-                for sig, c in self._query_clusters.items()
+                sig: c.model_dump(mode="json") for sig, c in self._query_clusters.items()
             },
         }
         return json.dumps(data, ensure_ascii=False, default=str)

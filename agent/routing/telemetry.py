@@ -18,11 +18,11 @@ class RouterTelemetry:
 
         new_total = metrics.selection_count + 1
         new_success_rate = (
-            metrics.success_rate + (int(record.execution_success) - metrics.success_rate) / new_total
+            metrics.success_rate
+            + (int(record.execution_success) - metrics.success_rate) / new_total
         )
         new_avg_confidence = (
-            metrics.avg_confidence
-            + (record.confidence - metrics.avg_confidence) / new_total
+            metrics.avg_confidence + (record.confidence - metrics.avg_confidence) / new_total
         )
 
         recent = list(metrics.recent_decisions[-19:]) + [record.execution_success]
@@ -54,9 +54,7 @@ class RouterTelemetry:
         return dict(self._metrics)
 
     def serialize(self) -> str:
-        data = {
-            name: m.model_dump(mode="json") for name, m in self._metrics.items()
-        }
+        data = {name: m.model_dump(mode="json") for name, m in self._metrics.items()}
         return json.dumps(data, ensure_ascii=False, default=str)
 
     def deserialize(self, json_str: str) -> None:
@@ -82,6 +80,4 @@ class RouterTelemetry:
             elif not any(last3) and metrics.selection_count >= 3:
                 weight = max(0.1, weight - 0.03)
 
-        self._metrics[tool_name] = metrics.model_copy(
-            update={"policy_weight": round(weight, 4)}
-        )
+        self._metrics[tool_name] = metrics.model_copy(update={"policy_weight": round(weight, 4)})

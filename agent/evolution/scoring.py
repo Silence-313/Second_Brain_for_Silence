@@ -5,9 +5,7 @@ import math
 from agent.models.evolution import ConsolidationResult, EvolutionSignal, ScoredMemory
 
 
-def compute_decay_score(
-    importance: float, usage_freq: int, cycles_since_access: int
-) -> float:
+def compute_decay_score(importance: float, usage_freq: int, cycles_since_access: int) -> float:
     effective_rate = 0.03 * (1 - usage_freq * 0.6)
     decay = importance * math.exp(-effective_rate * max(cycles_since_access, 0))
     return round(max(0.0, min(1.0, decay)), 4)
@@ -28,23 +26,21 @@ def reinforce(memory: ScoredMemory, signal: EvolutionSignal) -> ScoredMemory:
     return memory.model_copy(
         update={
             "importance_score": round(new_score, 4),
-            "usefulness_score": round(
-                memory.usefulness_score + (0.01 if amount > 0 else -0.01), 4
-            ),
+            "usefulness_score": round(memory.usefulness_score + (0.01 if amount > 0 else -0.01), 4),
         }
     )
 
 
-def consolidate(
-    new_memory: ScoredMemory, existing: list[ScoredMemory]
-) -> ConsolidationResult:
+def consolidate(new_memory: ScoredMemory, existing: list[ScoredMemory]) -> ConsolidationResult:
     for ex in existing:
         similarity = _jaccard_bigrams(
             new_memory.content + " ".join(new_memory.tags),
             ex.content + " ".join(ex.tags),
         )
         if similarity > 0.85:
-            return ConsolidationResult(merged=True, target_id=ex.id, similarity=round(similarity, 4))
+            return ConsolidationResult(
+                merged=True, target_id=ex.id, similarity=round(similarity, 4)
+            )
     return ConsolidationResult(merged=False, similarity=0.0)
 
 

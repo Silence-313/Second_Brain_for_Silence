@@ -139,7 +139,9 @@ class KnowledgeBaseManager:
         except Exception:
             return []
 
-    async def mark_concept_relationship(self, name_a: str, name_b: str, weight: float = 0.8) -> None:
+    async def mark_concept_relationship(
+        self, name_a: str, name_b: str, weight: float = 0.8
+    ) -> None:
         from agent.memory.store import (
             _encode_yaml_frontmatter,
             _get_str_list,
@@ -232,9 +234,7 @@ class KnowledgeBaseManager:
 
         for d in dirs:
             try:
-                files = await self._storage.list_dir(
-                    f"{self._base_path}/{d}".rstrip("/")
-                )
+                files = await self._storage.list_dir(f"{self._base_path}/{d}".rstrip("/"))
             except Exception:
                 continue
 
@@ -247,11 +247,13 @@ class KnowledgeBaseManager:
                     if query_lower in content.lower():
                         lines = content.split("\n")
                         snippets = [ln for ln in lines if query_lower in ln.lower()]
-                        results.append({
-                            "path": path,
-                            "snippets": snippets[:5],
-                            "match_count": len(snippets),
-                        })
+                        results.append(
+                            {
+                                "path": path,
+                                "snippets": snippets[:5],
+                                "match_count": len(snippets),
+                            }
+                        )
                 except Exception:
                     continue
 

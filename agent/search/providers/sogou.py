@@ -24,17 +24,23 @@ class SogouSearchProvider(SearchProvider):
         url = f"https://www.sogou.com/web?query={quote_plus(query)}"
         resp = await self._http.get(
             url,
-            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"},
+            headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            },
             timeout=15,
         )
         html = resp.text
 
         results: list[SearchResult] = []
-        blocks = re.findall(r'<div[^>]*class="[^"]*vrwrap[^"]*"[^>]*>(.*?)</div>\s*</div>\s*</div>', html, re.DOTALL)
+        blocks = re.findall(
+            r'<div[^>]*class="[^"]*vrwrap[^"]*"[^>]*>(.*?)</div>\s*</div>\s*</div>', html, re.DOTALL
+        )
 
         for block in blocks[:num_results]:
             title_m = re.search(r'<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', block, re.DOTALL)
-            snippet_m = re.search(r'(?:star-wiki|space-txt|str-text-info)[^>]*>(.*?)</', block, re.DOTALL)
+            snippet_m = re.search(
+                r"(?:star-wiki|space-txt|str-text-info)[^>]*>(.*?)</", block, re.DOTALL
+            )
 
             if title_m:
                 href = title_m.group(1)
@@ -48,7 +54,9 @@ class SogouSearchProvider(SearchProvider):
                     SearchResult(
                         title=re.sub(r"<[^>]+>", "", title_m.group(2)).strip(),
                         url=real_url,
-                        snippet=re.sub(r"<[^>]+>", "", snippet_m.group(1)).strip() if snippet_m else "",
+                        snippet=re.sub(r"<[^>]+>", "", snippet_m.group(1)).strip()
+                        if snippet_m
+                        else "",
                         provider="sogou",
                         domain="web",
                     )

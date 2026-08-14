@@ -161,9 +161,7 @@ class MemoryStore:
         fm = _episode_to_frontmatter(episode)
         body = fm.pop("detail", episode.detail)
         content = _encode_yaml_frontmatter(fm, body)
-        await self._storage.write(
-            f"{self._base_path}/episodes/{episode.id}.md", content
-        )
+        await self._storage.write(f"{self._base_path}/episodes/{episode.id}.md", content)
 
     async def sync_episodes(self, episodes: list[Episode]) -> None:
         for ep in episodes:
@@ -214,9 +212,7 @@ class MemoryStore:
             "updated_at": concept.updated_at.isoformat(),
         }
         content = _encode_yaml_frontmatter(fm, f"# {concept.name}\n\n{concept.slug}")
-        await self._storage.write(
-            f"{self._base_path}/concepts/{concept.slug}.md", content
-        )
+        await self._storage.write(f"{self._base_path}/concepts/{concept.slug}.md", content)
 
     async def update_concept_weight(self, slug: str, delta: float) -> None:
         try:
@@ -231,14 +227,10 @@ class MemoryStore:
         except Exception:
             pass
 
-    async def mark_concept_relationship(
-        self, slug_a: str, slug_b: str, weight: float
-    ) -> None:
+    async def mark_concept_relationship(self, slug_a: str, slug_b: str, weight: float) -> None:
         for slug in [slug_a, slug_b]:
             try:
-                text = await self._storage.read(
-                    f"{self._base_path}/concepts/{slug}.md"
-                )
+                text = await self._storage.read(f"{self._base_path}/concepts/{slug}.md")
                 fm, body = _parse_yaml_frontmatter(text)
                 if not fm:
                     continue
@@ -248,9 +240,7 @@ class MemoryStore:
                     related.append(other)
                 fm["related"] = related
                 content = _encode_yaml_frontmatter(fm, body)
-                await self._storage.write(
-                    f"{self._base_path}/concepts/{slug}.md", content
-                )
+                await self._storage.write(f"{self._base_path}/concepts/{slug}.md", content)
             except Exception:
                 continue
 
@@ -300,9 +290,7 @@ class MemoryStore:
 
     async def load_policy(self) -> CognitivePolicy | None:
         try:
-            text = await self._storage.read(
-                f"{self._base_path}/policy/cognitive_policy.json"
-            )
+            text = await self._storage.read(f"{self._base_path}/policy/cognitive_policy.json")
             return CognitivePolicy.model_validate_json(text)
         except Exception:
             return None
@@ -319,15 +307,11 @@ class MemoryStore:
     async def save_tool_decision(self, record: dict[str, object]) -> None:
         await self._ensure_dirs()
         try:
-            text = await self._storage.read(
-                f"{self._base_path}/policy/tool_decisions.jsonl"
-            )
+            text = await self._storage.read(f"{self._base_path}/policy/tool_decisions.jsonl")
         except Exception:
             text = ""
         text += json.dumps(record, ensure_ascii=False, default=str) + "\n"
-        await self._storage.write(
-            f"{self._base_path}/policy/tool_decisions.jsonl", text
-        )
+        await self._storage.write(f"{self._base_path}/policy/tool_decisions.jsonl", text)
 
     # -- Reasoning Traces --
 
@@ -340,11 +324,7 @@ class MemoryStore:
             "strategies_used": trace.strategies_used,
             "timestamp": trace.timestamp.isoformat(),
         }
-        body = "## Key Concepts\n\n" + "\n".join(
-            f"- {c}" for c in trace.key_concepts
-        )
+        body = "## Key Concepts\n\n" + "\n".join(f"- {c}" for c in trace.key_concepts)
         body += "\n\n## Insights\n\n" + "\n".join(f"- {i}" for i in trace.insights)
         content = _encode_yaml_frontmatter(fm, body)
-        await self._storage.write(
-            f"{self._base_path}/reasoning/{trace.id}.md", content
-        )
+        await self._storage.write(f"{self._base_path}/reasoning/{trace.id}.md", content)
